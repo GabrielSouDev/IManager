@@ -1,0 +1,77 @@
+using IManager.Web.Presentation.Extensions;
+using IManager.Web.Presentation.Mappings;
+using IManager.Web.Presentation.Middlewares;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Serilog;
+using System.Globalization;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+}).AddRazorRuntimeCompilation();
+
+builder.Services.Configure<RazorViewEngineOptions>(options =>
+{
+    options.ViewLocationFormats.Clear();
+    options.ViewLocationFormats.Add("/Presentation/Views/{1}/{0}.cshtml");
+    options.ViewLocationFormats.Add("/Presentation/Views/Shared/{0}.cshtml");
+});
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var culture = new CultureInfo("pt-BR");
+    options.DefaultRequestCulture = new RequestCulture(culture);
+    options.SupportedCultures = new[] { culture };
+    options.SupportedUICultures = new[] { culture };
+});
+
+builder.AddLogging();
+Log.Information("Iniciando Aplicação...");
+
+builder.AddConfigurations();
+builder.AddContext();
+builder.AddAuth();
+builder.AddServices();
+builder.AddRepositories();
+builder.AddFluentValidation();
+builder.AddDataProtectionConfig();
+builder.AddRateLimitConfig();
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MappingProfile>();
+});
+
+var app = builder.Build();
+
+app.UseRequestLocalization();
+
+await app.Initialize();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (!app.Environment.IsDevelopment())
+    app.UseHsts();
+else
+    app.UseDeveloperExceptionPage();
+
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+
+app.UseHttpsRedirection();
+app.UseRouting();
+
+app.UseRateLimiter();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapStaticAssets();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
+
+app.Run();

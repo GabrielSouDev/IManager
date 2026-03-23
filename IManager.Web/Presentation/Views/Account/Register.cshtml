@@ -1,0 +1,293 @@
+﻿@using IManager.Web.Domain.Entities.Companies
+@using IManager.Web.Presentation.ViewModels.Companies
+@using IManager.Web.Presentation.ViewModels.Departments
+@using System.Text.Json
+@model RegisterViewModel
+
+@{
+    ViewData["Title"] = "Registro";
+    bool isStaff = User.IsInRole(Role.Staff);
+
+    var companies = ViewBag.Companies as IEnumerable<CompanyHierarchyViewModel>;
+    var departments = ViewBag.Departments as IEnumerable<DepartmentHierarchyViewModel>;
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+
+        <div class="text-center mb-4">
+            <h4 class="fw-600">Registrar Usuario</h4>
+            <p class="text-muted small">Preencha os dados abaixo para cadastrar um colaborador.</p>
+        </div>
+
+        <form asp-action="Register" method="post" class="border p-4 shadow-sm rounded bg-white">
+
+            @if (isStaff && companies != null)
+            {
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <select id="companySelect" asp-for="CompanyId" class="form-control">
+                        <option value="">Selecione a empresa</option>
+
+                        @foreach (var company in companies)
+                        {
+                            <option value="@company.Id">@company.TradeName</option>
+                        }
+
+                    </select>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="CompanyId" />
+            }
+
+            @if (departments != null || companies != null)
+            {
+                <div class="form-group">
+                    <label>Departamento</label>
+
+                    <select id="departmentSelect" asp-for="DepartmentId" class="form-control">
+
+                        <option value="">Selecione o departamento</option>
+
+                        @if (!isStaff && departments != null)
+                        {
+                            @foreach (var department in departments)
+                            {
+                                <option value="@department.Id">@department.Name</option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label>Cargo</label>
+
+                    <select id="jobTitleSelect" asp-for="JobTitleId" class="form-control">
+                        <option value="">Selecione o cargo</option>
+                    </select>
+
+                </div>
+            }
+
+            <div class="mb-3">
+                <label class="form-label fw-500 small">
+                    Salário Base: <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="salaryDisplay"
+                       class="form-control"
+                       placeholder="R$ 0,00"
+                       autocomplete="off" />
+                <input type="hidden" asp-for="BaseSalary" id="salaryHidden" />
+                <span asp-validation-for="BaseSalary" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label fw-500 small">Nome Completo: <span class="text-danger">*</span></label>
+                <input asp-for="FullName" class="form-control" placeholder="Digite seu nome completo" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BirthDate" class="form-label fw-500 small">Data de Nascimento: <span class="text-danger">*</span></label>
+                <input asp-for="BirthDate" class="form-control" type="date" />
+                <span asp-validation-for="BirthDate" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DocumentNumber" class="form-label fw-500 small">CPF: <span class="text-danger">*</span></label>
+                <input asp-for="DocumentNumber" id="cpf" class="form-control" inputmode="numeric" />
+                <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-500 small">Email: <span class="text-danger">*</span></label>
+                <input asp-for="Email" class="form-control" placeholder="Digite seu email" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label fw-500 small">Telefone <span class="text-muted">(opcional)</span></label>
+                <input asp-for="PhoneNumber" id="phone" class="form-control" placeholder="(11) 99999-9999" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-500 small">Senha <span class="text-danger">*</span></label>
+                <input asp-for="Password" type="password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label fw-500 small">Confirmar senha <span class="text-danger">*</span></label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+
+                <label class="form-label fw-500 small">Perfil de Acesso <span class="text-danger">*</span></label>
+
+                <div>
+                    @{
+                        var rolesAllowed = isStaff ? Role.All : Role.AdminAllowed;
+                    }
+
+                    @foreach (var role in rolesAllowed)
+                    {
+                        <div class="form-check form-check-inline">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   asp-for="Role"
+                                   value="@role"
+                                   id="role_@role" />
+
+                            <label class="form-check-label small" for="role_@role">@role</label>
+
+                        </div>
+                    }
+                </div>
+
+                <span asp-validation-for="Role" class="text-danger small"></span>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Criar conta</button>
+            <a asp-controller="Users" asp-action="Index" class="btn btn-primary w-100 mt-2">Voltar</a>
+
+        </form>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 small">
+                @Html.ValidationSummary()
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script type="text/javascript">
+        window.addEventListener('DOMContentLoaded', function () {
+
+            const display = document.getElementById('salaryDisplay');
+            const hidden = document.getElementById('salaryHidden');
+
+            display.addEventListener('input', function (e) {
+                let raw = e.target.value.replace(/\D/g, '');
+                if (!raw) {
+                    e.target.value = '';
+                    hidden.value = '';
+                    return;
+                }
+
+                let parts = (parseInt(raw, 10) / 100).toFixed(2).split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                e.target.value = 'R$ ' + parts[0] + ',' + parts[1];
+                hidden.value = parts[0].replace(/\./g, '') + ',' + parts[1];
+            });
+
+        });
+
+        function maskCPF(v){
+            v=v.replace(/\D/g,'').slice(0,11)
+            return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4')
+        }
+
+        function maskPhone(v){
+            v=v.replace(/\D/g,'').slice(0,11)
+            return v.length<=10
+            ? v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3')
+            : v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3')
+        }
+
+        document.getElementById('cpf')?.addEventListener('input',e=>e.target.value=maskCPF(e.target.value))
+        document.getElementById('phone')?.addEventListener('input',e=>e.target.value=maskPhone(e.target.value))
+
+    </script>
+    @if (isStaff)
+    {
+        <script>
+            const companies = @Html.Raw(JsonSerializer.Serialize(companies));
+
+                const companySelect=document.getElementById("companySelect")
+                const departmentSelect=document.getElementById("departmentSelect")
+                const jobTitleSelect=document.getElementById("jobTitleSelect")
+
+                companySelect?.addEventListener("change",() => {
+                    departmentSelect.innerHTML='<option value="">Selecione o departamento</option>'
+                    jobTitleSelect.innerHTML='<option value="">Selecione o cargo</option>'
+
+                    const company = companies.find(c => c.Id == companySelect.value)
+                    if(!company) return
+
+                    company.Departments.forEach(dep=>{
+                        const option=document.createElement("option")
+                        option.value=dep.Id
+                        option.text=dep.Name
+                        departmentSelect.appendChild(option)
+                    })
+
+                })
+
+                departmentSelect?.addEventListener("change",() => {
+
+                    jobTitleSelect.innerHTML='<option value="">Selecione o cargo</option>'
+
+                    const company=companies.find(c=>c.Id==companySelect.value)
+                    if(!company) return
+
+                    const department=company.Departments.find(d=>d.Id==departmentSelect.value)
+                    if(!department) return
+
+                    department.JobTitles.forEach(job=>{
+                        const option=document.createElement("option")
+                        option.value=job.Id
+                        option.text=job.Name
+                        jobTitleSelect.appendChild(option)
+                    })
+
+                })
+
+        </script>
+    }
+    else
+    {
+        <script>
+
+            const departments=@Html.Raw(System.Text.Json.JsonSerializer.Serialize(departments))
+
+            const departmentSelect=document.getElementById("departmentSelect")
+            const jobTitleSelect=document.getElementById("jobTitleSelect")
+
+            departmentSelect?.addEventListener("change",() => {
+
+                jobTitleSelect.innerHTML='<option value="">Selecione o cargo</option>'
+
+                const department=departments.find(d=>d.id==this.value)
+                if(!department) return
+
+                department.JobTitles.forEach(job=>{
+                    const option=document.createElement("option")
+                    option.value=job.Id
+                    option.text=job.Name
+                    jobTitleSelect.appendChild(option)
+                })
+
+            })
+
+        </script>
+    }
+
+        
+}

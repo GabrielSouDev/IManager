@@ -1,0 +1,66 @@
+@if (TempData["Success"] != null || TempData[ToastMessages.Error]  != null)
+{
+    <div id="toast-container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="toast toast--success" id="toast-success">
+                <div class="toast__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="toast__body">
+                    <span class="toast__title">Sucesso</span>
+                    <span class="toast__msg">@TempData[ToastMessages.Success] </span>
+                </div>
+                <button class="toast__close" onclick="fecharToast('toast-success')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="toast__progress"></div>
+            </div>
+        }
+        @if (TempData[ToastMessages.Error]  != null)
+        {
+            <div class="toast toast--error" id="toast-error">
+                <div class="toast__icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="toast__body">
+                    <span class="toast__title">Erro</span>
+                    <span class="toast__msg">@TempData[ToastMessages.Error] </span>
+                </div>
+                <button class="toast__close" onclick="fecharToast('toast-error')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="toast__progress"></div>
+            </div>
+        }
+    </div>
+}
+<script>
+    (function () {
+        function fecharToast(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('exit');
+            setTimeout(() => el.remove(), 300);
+        }
+
+        window.fecharToast = fecharToast;
+
+        ['toast-success', 'toast-error'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) setTimeout(() => fecharToast(id), 5000);
+        });
+    })();
+</script>

@@ -1,0 +1,58 @@
+﻿@model AccountDetailsViewModel
+@{
+    ViewData["Title"] = "Perfil";
+}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width:64px;height:64px;font-size:1.5rem">
+                        @Model.FullName.First()
+                    </div>
+                    <h5 class="fw-bold mb-0">@Model.FullName</h5>
+                    <h6 class="fw-bold mb-0">@User.FindFirst("CompanyTradeName")!.Value</h6>
+                </div>
+
+                <hr />
+
+                <div class="mb-1">
+                    <span class="text-muted small">Data de Nascimento: </span>
+                    <span class="small fw-500">@Model.BirthDate.ToString("dd/MM/yyyy")</span>
+                </div>
+
+                <div class="mb-4">
+                    <span class="text-muted small">Telefone: </span>
+                    <span class="small fw-500">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Não informado" : Model.PhoneNumber)</span>
+                </div>
+
+                <div class="mt-1">
+                    <span class="text-muted small">CPF: </span>
+                    <span class="small fw-500">@Model.DocumentNumber</span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted small">E-mail: </span>
+                    <span class="small fw-500">@User.Identity!.Name</span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted small">Setor: </span>
+                    <span class="small fw-500">@User.FindFirst("Department")!.Value</span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted small">Cargo: </span>
+                    <span class="small fw-500">@User.FindFirst("JobTitle")!.Value</span>
+                </div>
+                <hr />
+
+                <div class="d-grid gap-2">
+                    <a asp-controller="Account" asp-action="EditDetails" class="btn btn-outline-primary btn-sm">Editar Perfil</a>
+                    <a asp-controller="Account" asp-action="ChangeEmail" class="btn btn-outline-secondary btn-sm">Alterar E-mail</a>
+                    <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-outline-secondary btn-sm">Alterar Senha</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

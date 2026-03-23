@@ -1,0 +1,50 @@
+﻿@model IManager.Web.Presentation.ViewModels.Companies.CompanyViewModel
+
+@{
+    ViewData["Title"] = "Deletar Empresa";
+}
+
+<h4>Deletar Empresa</h4>
+
+<h5>Você tem certeza que deseja deletar esta empresa?</h5>
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            CNPJ:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DocumentNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            Razão Social:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.LegalName)
+        </dd>
+        <dt class = "col-sm-2">
+            Nome Fantasia:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TradeName)
+        </dd>
+        <dt class = "col-sm-2">
+            Data de Fundação:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.FoundedAt)
+        </dd>
+        <dt class = "col-sm-2">
+            Data de Criação:
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CreatedAt)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Deletar" class="btn btn-danger" /> |
+        <a asp-action="Index">Voltar</a>
+    </form>
+</div>

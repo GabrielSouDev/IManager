@@ -1,0 +1,82 @@
+﻿@using System.Text.Json
+@using IManager.Web.Presentation.ViewModels.Companies
+@model IManager.Web.Presentation.ViewModels.Departments.CreateDepartmentViewModel
+
+@{
+    ViewData["Title"] = "Criar Setor";
+
+    var companies = ViewBag.Companies as IEnumerable<CompanyViewModel>;
+}
+
+<h4>Criar Setor</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Name" class="form-label fw-500 small">Nome do Setor: <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            @if (User.IsInRole(Role.Staff))
+                {
+                <div class="form-group">
+                    <label asp-for="CompanyId" class="form-label fw-500 small">Empresa: <span class="text-danger">*</span></label>
+                    <select id="companySelect" asp-for="CompanyId" class="form-control">
+                        <option value="">Selecione a empresa</option>
+
+                        @foreach (var company in companies)
+                        {
+                            <option value="@company.Id">@company.TradeName - @company.DocumentNumber</option>
+                        }
+
+                    </select>
+                </div>
+                }
+            else
+            {
+                <div class="form-group">
+                    <input asp-for="CompanyId" class="form-control" hidden />
+                </div>
+            }
+
+            <div class="form-group">
+                <input type="submit" value="Criar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    @(User.IsInRole(Role.Staff))
+    {
+            <script>
+                const companies = @Html.Raw(JsonSerializer.Serialize(companies));
+
+                const companySelect=document.getElementById("companySelect")
+
+                companySelect?.addEventListener("change",() => {
+
+                    const company = companies.find(c => c.Id == companySelect.value)
+                    if(!company) return
+
+                    company.Departments.forEach(dep=>{
+                        const option=document.createElement("option")
+                        option.value=dep.Id
+                        option.text=dep.Name
+                        departmentSelect.appendChild(option)
+                    })
+
+                })
+            </script>
+    }
+}

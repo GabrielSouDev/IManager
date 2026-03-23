@@ -1,0 +1,102 @@
+﻿@model IEnumerable<IManager.Web.Presentation.ViewModels.Account.AccountViewModel>
+
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-controller="Account" asp-action="Register">Criar Usuario</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Nome Completo
+            </th>
+            <th>
+                CPF
+            </th>
+            <th>
+                Data de Nascimento
+            </th>
+            @if(User.IsInRole(Role.Staff))
+            {
+                <th>
+                    Empresa
+                </th>
+                <th>
+                    CNPJ
+                </th>
+            }
+            else
+            {
+                <th>
+                    Salario Base
+                </th>
+            }
+            <th>
+                Setor
+            </th>
+            <th>
+                Cargo
+            </th>
+            <th>
+                Perfl de Acesso
+            </th>
+            <th>
+                Ativo
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) 
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DocumentNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BirthDate)
+            </td>
+            @if(User.IsInRole(Role.Staff))
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.JobTitle.Department.Company.TradeName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.JobTitle.Department.Company.DocumentNumber)
+                    </td>
+                }
+            else
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.BaseSalary)
+                    </td>
+                }
+            <td>
+                @Html.DisplayFor(modelItem => item.JobTitle.Department.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.JobTitle.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Role)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsActive)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Desativar</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

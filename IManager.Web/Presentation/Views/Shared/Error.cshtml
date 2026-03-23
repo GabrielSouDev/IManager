@@ -1,0 +1,40 @@
+﻿@using IManager.Web.Presentation.ViewModels
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Erro";
+    var statusCode = Model.StatusCode ?? 500;
+    var title = statusCode switch
+    {
+        404 => "Página não encontrada",
+        403 => "Acesso negado",
+        401 => "Não autorizado",
+        _ => "Erro inesperado"
+    };
+    var message = statusCode switch
+    {
+        404 => "A página que você está procurando não existe ou foi movida.",
+        403 => "Você não tem permissão para acessar este recurso.",
+        401 => "Você precisa estar autenticado para acessar este recurso.",
+        _ => "Ocorreu um erro inesperado. Tente novamente mais tarde."
+    };
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1 text-danger fw-bold">@statusCode</h1>
+            <h2 class="mb-3">@title</h2>
+            <p class="text-muted mb-4">@message</p>
+
+            @if (Model.ShowRequestId)
+            {
+                <p class="text-muted small mb-4">
+                    <strong>Request ID:</strong> <code>@Model.RequestId</code>
+                </p>
+            }
+
+            <a href="/" class="btn btn-primary me-2">Voltar ao início</a>
+            <a href="javascript:history.back()" class="btn btn-outline-secondary">Página anterior</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+services:
+  postgres: 
+    image: postgres:15-alpine
+    container_name: imanager.postgres-db 
+    ports: 
+      - "${Postgres__Port}:5432" 
+    environment: 
+      POSTGRES_DB: ${Postgres__Name} 
+      POSTGRES_USER: ${Postgres__User} 
+      POSTGRES_PASSWORD: ${Postgres__Password} 
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+  
+volumes:
+  pgdata:

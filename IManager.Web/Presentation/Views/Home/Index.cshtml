@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Início";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-7 text-center">
+        <p class="text-muted small mb-1">Bem-vindo de volta,</p>
+        <h4 class="mb-3">@User.FindFirst("FullName")?.Value</h4>
+        <p class="text-muted small">
+            O <strong>IManager</strong> é sua plataforma central de gestão.
+            Aqui você pode gerenciar usuários, acompanhar informações e manter
+            tudo organizado em um só lugar.
+        </p>
+    </div>
+</div>

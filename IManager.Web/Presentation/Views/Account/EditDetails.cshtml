@@ -1,0 +1,65 @@
+﻿@model AccountDetailsViewModel
+@{
+    ViewData["Title"] = "Editar Perfil";
+}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="text-center mb-4">
+            <h4 class="fw-600">Editar Perfil</h4>
+        </div>
+        <form asp-action="EditDetails" method="post" class="border p-4 shadow-sm rounded bg-white">
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label fw-500 small">Nome Completo: <span class="text-danger">*</span></label>
+                <input asp-for="FullName" class="form-control" placeholder="Digite seu nome completo" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DocumentNumber" class="form-label fw-500 small">CPF:</label>
+                <input asp-for="DocumentNumber" id="cpf" class="form-control" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BirthDate" class="form-label fw-500 small">Data de Nascimento: <span class="text-danger">*</span></label>
+                <input asp-for="BirthDate" class="form-control" type="date" />
+                <span asp-validation-for="BirthDate" class="text-danger small"></span>
+            </div>
+           
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label fw-500 small">
+                    Telefone: <span class="text-muted">(opcional)</span>
+                </label>
+                <input asp-for="PhoneNumber" id="phone" class="form-control" placeholder="(11) 99999-9999" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Salvar</button>
+            <a asp-action="Details" class="btn btn-outline-secondary w-100 mt-2">Cancelar</a>
+        </form>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 small">
+                @Html.ValidationSummary()
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('phone').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+            if (v.length <= 10)
+                v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+            else
+                v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+            e.target.value = v;
+        });
+
+        document.getElementById('cpf').addEventListener('input', function (e) {
+            let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+            v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+            e.target.value = v;
+        });
+    </script>
+}

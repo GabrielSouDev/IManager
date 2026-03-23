@@ -1,0 +1,67 @@
+services:
+  imanager.web:
+    image: gabrielsouz/imanager:latest-alpine
+    container_name: imanager-mvc
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${ASPNETCORE_PORT}:8080
+    env_file:
+      - .env
+    networks:  
+      - postgres-net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+
+      - POSTGRES__HOST=postgres
+      - POSTGRES__PORT=5432
+      - POSTGRES__NAME=${POSTGRES__NAME}
+      - POSTGRES__USER=${POSTGRES__USER}
+      - POSTGRES__PASSWORD=${POSTGRES__PASSWORD}
+
+      - ADMINUSER__EMAIL=${ADMINUSER__EMAIL}
+      - ADMINUSER__PASSWORD=${ADMINUSER__PASSWORD}
+      - ADMINUSER__CONFIRMPASSWORD=${ADMINUSER__CONFIRMPASSWORD}
+
+      - EMAIL__HOST=${EMAIL__HOST}
+      - EMAIL__PORT=${EMAIL__PORT}
+      - EMAIL__USERNAME=${EMAIL__USERNAME}
+      - EMAIL__PASSWORD=${EMAIL__PASSWORD}
+      - EMAIL__FROMNAME=${EMAIL__FROMNAME}
+      - EMAIL__FROMEMAIL=${EMAIL__FROMEMAIL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./keys:/app/keys
+
+  postgres: 
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES__USER} -d ${POSTGRES__NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: imanager.postgres-db 
+    restart: always 
+    networks: 
+      - postgres-net 
+    ports: 
+      - "${POSTGRES__PORT}:5432" 
+    environment: 
+      POSTGRES_DB: ${POSTGRES__NAME} 
+      POSTGRES_USER: ${POSTGRES__USER} 
+      POSTGRES_PASSWORD: ${POSTGRES__PASSWORD} 
+    volumes: 
+      - pgdata:/var/lib/postgresql/data
+  
+networks: 
+  postgres-net:
+volumes:
+  pgdata:

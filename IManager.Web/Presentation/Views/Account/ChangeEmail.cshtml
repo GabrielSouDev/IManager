@@ -1,0 +1,31 @@
+﻿@model ChangeEmailViewModel
+@{
+    ViewData["Title"] = "Alterar Email";
+}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="text-center mb-4">
+            <h4 class="fw-600">Alterar Email</h4>
+        </div>
+        <form asp-action="ChangeEmail" method="post" class="border p-4 shadow-sm rounded bg-white">
+
+            <div class="mb-4">
+                <label asp-for="NewEmail" class="form-label fw-500 small">Nova senha:  <span class="text-danger">*</span></label>
+                <input asp-for="NewEmail" class="form-control" placeholder="Digite seu novo e-mail." />
+                <span asp-validation-for="NewEmail" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Alterar</button>
+            <a asp-action="Details" class="btn btn-outline-secondary w-100 mt-2">Cancelar</a>
+        </form>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 small">
+                @Html.ValidationSummary()
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

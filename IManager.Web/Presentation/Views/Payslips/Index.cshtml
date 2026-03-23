@@ -1,0 +1,101 @@
+﻿@model IEnumerable<IManager.Web.Domain.Entities.Payrolls.Payslip>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Payroll)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Employee)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GrossSalary)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OvertimeAdditionals)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.HazardPay)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UnhealthyPay)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Commission)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.INSSDeduction)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IRRFDeduction)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OtherDeductions)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedAt)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LastModified)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Payroll.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Employee.DocumentNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GrossSalary)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OvertimeAdditionals)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.HazardPay)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnhealthyPay)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Commission)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.INSSDeduction)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IRRFDeduction)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OtherDeductions)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreatedAt)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastModified)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

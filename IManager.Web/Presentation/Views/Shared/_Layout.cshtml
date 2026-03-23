@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - IManager</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/IManager.Web.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm bg-white border-bottom shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    I<span>Manager</span>
+                </a>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto d-flex align-items-center gap-1">
+                        @if (User.Identity!.IsAuthenticated)
+                            {
+                                @if (User.IsInRole(Role.Staff))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Companies" asp-action="Index">Empresas</a>
+                                    </li>
+                                }
+                                @if (!User.IsInRole(Role.User))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Users" asp-action="Index">Usuarios</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Departments" asp-action="Index">Setores</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="JobTitles" asp-action="Index">Cargos</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Payrolls" asp-action="Index">Folhas de Pagamento</a>
+                                    </li>
+                                }
+                                
+                                @if (User.IsInRole(Role.User))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="TimeChecks" asp-action="Index">Registro de pontos</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link" asp-controller="Payslips" asp-action="Index">Holerites</a>
+                                    </li>
+                                }
+                            }
+                    </ul>
+
+                    <ul class="navbar-nav d-flex align-items-center gap-1">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Details">
+                                    <span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-1"
+                                          style="width:28px;height:28px;font-size:0.75rem">
+                                        @User.FindFirst("FullName")?.Value.ToUpper().First()
+                                    </span>
+                                    @User.FindFirst("FullName")?.Value.Split(' ').First()
+                                </a>
+                            </li>
+                            <li><div class="nav-divider"></div></li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn-nav-logout">Sair</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Entrar</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container main-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span>&copy; 2026 IManager</span>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidade</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_Toasts")
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,197 @@
+﻿@using IManager.Web.Presentation.ViewModels.Departments
+@model IManager.Web.Presentation.ViewModels.Account.EditAccountViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+
+    var departments = ViewBag.Departments as IEnumerable<DepartmentHierarchyViewModel>;
+}
+
+<h1>Editar Usuario</h1>
+
+<h4>UserProfile</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label>Departamento</label>
+
+                    <select id="departmentSelect" asp-for="DepartmentId" class="form-control">
+
+                        @if (departments != null)
+                        {
+                            @foreach (var department in departments)
+                            {
+                                <option value="@department.Id"  
+                                        selected="@(department.Id == Model.DepartmentId ? "selected" : null)">
+                                    @department.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+                    <label>Cargo</label>
+
+                    <select id="jobTitleSelect" asp-for="JobTitleId" class="form-control">
+                    </select>
+
+                </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-500 small">
+                    Salário Base: <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="salaryDisplay"
+                       class="form-control"
+                       placeholder="R$ 0,00"
+                       autocomplete="off" />
+                <input type="hidden" asp-for="BaseSalary" id="salaryHidden" />
+                <span asp-validation-for="BaseSalary" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="FullName" class="control-label">Nime Completo: <span class="text-danger">*</span></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DocumentNumber" class="form-label fw-500 small">CPF: <span class="text-danger">*</span></label>
+                <input asp-for="DocumentNumber" id="cpf" class="form-control" inputmode="numeric" />
+                <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label fw-500 small">Telefone <span class="text-muted">(opcional)</span></label>
+                <input asp-for="PhoneNumber" id="phone" class="form-control" placeholder="(11) 99999-9999" />
+                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email" class="control-label">Email: <span class="text-danger">*</span></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BirthDate" class="form-label fw-500 small">Data de Nascimento: <span class="text-danger">*</span></label>
+                <input asp-for="BirthDate" class="form-control" type="date" />
+                <span asp-validation-for="BirthDate" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+
+                <label class="form-label fw-500 small">Perfil de Acesso <span class="text-danger">*</span></label>
+
+                <div>
+                    @{
+                        var rolesAllowed = User.IsInRole(Role.Staff) ? Role.All : Role.AdminAllowed;
+                    }
+
+                    @foreach (var role in rolesAllowed)
+                    {
+                        <div class="form-check form-check-inline">
+
+                            <input class="form-check-input"
+                                   type="radio"
+                                   asp-for="Role"
+                                   value="@role"
+                                   id="role_@role" />
+
+                            <label class="form-check-label small" for="role_@role">@role</label>
+
+                        </div>
+                    }
+                </div>
+
+                <span asp-validation-for="Role" class="text-danger small"></span>
+
+            </div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <input type="submit" value="Salvar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script type="text/javascript">
+        window.addEventListener('DOMContentLoaded', function () {
+
+            const display = document.getElementById('salaryDisplay');
+            const hidden = document.getElementById('salaryHidden');
+
+            if (hidden.value) {
+                let raw = hidden.value.replace(/\D/g, '');
+                let parts = (parseInt(raw, 10) / 100).toFixed(2).split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                display.value = 'R$ ' + parts[0] + ',' + parts[1];
+            }
+
+            display.addEventListener('input', function (e) {
+                let raw = e.target.value.replace(/\D/g, '');
+                if (!raw) {
+                    e.target.value = '';
+                    hidden.value = '';
+                    return;
+                }
+
+                let parts = (parseInt(raw, 10) / 100).toFixed(2).split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+                e.target.value = 'R$ ' + parts[0] + ',' + parts[1];
+                hidden.value = parts[0].replace(/\./g, '') + ',' + parts[1];
+            });
+
+        });
+
+        function maskCPF(v){
+            v=v.replace(/\D/g,'').slice(0,11)
+            return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4')
+        }
+
+        function maskPhone(v){
+            v=v.replace(/\D/g,'').slice(0,11)
+            return v.length<=10
+            ? v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3')
+            : v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3')
+        }
+
+        document.getElementById('cpf')?.addEventListener('input',e=>e.target.value=maskCPF(e.target.value))
+        document.getElementById('phone')?.addEventListener('input',e=>e.target.value=maskPhone(e.target.value))
+
+        const departments=@Html.Raw(System.Text.Json.JsonSerializer.Serialize(departments))
+
+        const departmentSelect=document.getElementById("departmentSelect")
+        const jobTitleSelect=document.getElementById("jobTitleSelect")
+
+        window?.addEventListener("DOMContentLoaded",() => {
+
+            const department=departments.find(d=>d.id==this.value)
+            if(!department) return
+
+            department.JobTitles.forEach(job=>{
+                const option=document.createElement("option")
+                option.value=job.Id
+                option.text=job.Name
+                jobTitleSelect.appendChild(option)
+            })
+
+        })
+    </script>
+}
