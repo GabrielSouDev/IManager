@@ -1,7 +1,10 @@
-﻿using IManager.Web.Data.Persistence;
+﻿using IManager.Web.Application.Services;
+using IManager.Web.Data.Persistence;
 using IManager.Web.Domain.Consts;
 using IManager.Web.Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace IManager.Web.Presentation.Extensions;
 
@@ -34,6 +37,25 @@ public static class AuthExtensions
             options.SlidingExpiration = true;
         });
 
+
+        builder.Services.AddAuthentication()
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                };
+            });
+
+        builder.Services.AddScoped<JwtTokenService>();
+
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy(Poly.StaffOrAdmin, policy =>
@@ -42,5 +64,6 @@ public static class AuthExtensions
             options.AddPolicy(Poly.AdminOrUser, policy =>
                 policy.RequireRole(Role.Admin, Role.User));
         });
+
     }
 }

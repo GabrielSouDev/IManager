@@ -33,6 +33,11 @@ services:
       - EMAIL__PASSWORD=${EMAIL__PASSWORD}
       - EMAIL__FROMNAME=${EMAIL__FROMNAME}
       - EMAIL__FROMEMAIL=${EMAIL__FROMEMAIL}
+
+      - JWT__KEY=${JWT__KEY}
+      - JWT__ISSUER=${JWT__ISSUER}
+      - JWT__AUDIENCE=${JWT__AUDIENCE}
+      - JWT__EXPIRESINMINUTES=${JWT__EXPIRESINMINUTES}
     depends_on:
       postgres:
         condition: service_healthy
