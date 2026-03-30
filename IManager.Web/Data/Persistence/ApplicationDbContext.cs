@@ -143,13 +143,16 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                   .WithOne(e => e.TimeEntry)
                   .HasForeignKey(e => e.TimeEntryId)
                   .OnDelete(DeleteBehavior.Cascade); // checks dependem totalmente do TimeEntry
+            
+            entity.Ignore(te => te.HoursWorked);
+
+            entity.Ignore(te => te.Status);
         });
 
         // TimeCheck
         modelBuilder.Entity<TimeCheck>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Type).IsRequired();
             entity.Property(e => e.Timestamp).IsRequired();
         });
 

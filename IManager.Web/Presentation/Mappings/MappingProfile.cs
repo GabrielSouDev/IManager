@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using IManager.Web.Domain.Entities.Companies;
+using IManager.Web.Domain.Entities.TimeTrackings;
 using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Presentation.ViewModels.JobTitles;
+using IManager.Web.Shared.DTO.TimeTrackings;
 
 namespace IManager.Web.Presentation.Mappings;
 
@@ -29,5 +31,8 @@ public class MappingProfile : Profile
 
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap();
         CreateMap<JobTitle, JobTitleHierarchyModelView>().ReverseMap();
+
+        CreateMap<TimeEntry, TimeEntryDTO>().ReverseMap();
+        CreateMap<TimeCheck, TimeCheckDTO>().ReverseMap();
     }
 }

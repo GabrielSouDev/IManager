@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IManager.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260312205417_Adicionando-Role-em-UserProfile")]
-    partial class AdicionandoRoleemUserProfile
+    [Migration("20260330164815_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -223,9 +223,6 @@ namespace IManager.Web.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TimeEntryId");
@@ -245,11 +242,14 @@ namespace IManager.Web.Migrations
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("HoursWorked")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

@@ -1,4 +1,4 @@
-﻿namespace IManager.Web.Shared;
+﻿namespace IManager.Web.Shared.Requests;
 
 public class LoginRequest
 {

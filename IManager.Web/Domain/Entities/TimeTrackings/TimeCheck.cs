@@ -7,7 +7,5 @@ public class TimeCheck : BaseEntity
     public Guid TimeEntryId { get; set; }
     public TimeEntry TimeEntry { get; set; } = null!;
 
-    public TimeCheckType Type { get; set; }
-
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }

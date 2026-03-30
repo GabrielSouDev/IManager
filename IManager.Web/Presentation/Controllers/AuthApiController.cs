@@ -1,6 +1,6 @@
 ﻿using IManager.Web.Application.Services;
 using IManager.Web.Domain.Entities.Users;
-using IManager.Web.Shared;
+using IManager.Web.Shared.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ namespace IManager.Web.Presentation.Controllers;
 [Route("api/auth")]
 public class AuthApiController : ControllerBase
 {
-    private JwtTokenService _jwtTokenService;
+    private readonly JwtTokenService _jwtTokenService;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 

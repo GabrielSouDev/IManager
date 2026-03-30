@@ -3,7 +3,6 @@ using System;
 using IManager.Web.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,11 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IManager.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260311212841_Incluindo-Novas-Tabelas")]
-    partial class IncluindoNovasTabelas
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,7 @@ namespace IManager.Web.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Company", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.Company", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -60,7 +57,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("Companies");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Department", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.Department", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -87,7 +84,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("Departments");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.JobTitle", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.JobTitle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -126,7 +123,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("JobTitles");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Payroll", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Payrolls.Payroll", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,7 +151,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("Payrolls");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Payslip", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Payrolls.Payslip", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -205,7 +202,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("Payslips");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.TimeCheck", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.TimeTrackings.TimeCheck", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -223,9 +220,6 @@ namespace IManager.Web.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TimeEntryId");
@@ -233,7 +227,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("TimeChecks");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.TimeEntry", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.TimeTrackings.TimeEntry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -245,11 +239,14 @@ namespace IManager.Web.Migrations
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("HoursWorked")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -258,7 +255,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("TimeEntries");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.User.User", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -323,7 +320,7 @@ namespace IManager.Web.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.User.UserProfile", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Users.UserProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -361,6 +358,10 @@ namespace IManager.Web.Migrations
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -501,9 +502,9 @@ namespace IManager.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Department", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.Department", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.Company", "Company")
+                    b.HasOne("IManager.Web.Domain.Entities.Companies.Company", "Company")
                         .WithMany("Departments")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -512,9 +513,9 @@ namespace IManager.Web.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.JobTitle", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.JobTitle", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.Department", "Department")
+                    b.HasOne("IManager.Web.Domain.Entities.Companies.Department", "Department")
                         .WithMany("JobTitles")
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -523,9 +524,9 @@ namespace IManager.Web.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Payroll", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Payrolls.Payroll", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.Company", "Company")
+                    b.HasOne("IManager.Web.Domain.Entities.Companies.Company", "Company")
                         .WithMany("Payrolls")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -534,15 +535,15 @@ namespace IManager.Web.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Payslip", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Payrolls.Payslip", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.User.UserProfile", "Employee")
+                    b.HasOne("IManager.Web.Domain.Entities.Users.UserProfile", "Employee")
                         .WithMany("Payslips")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("IManager.Web.Models.Entities.Payroll", "Payroll")
+                    b.HasOne("IManager.Web.Domain.Entities.Payrolls.Payroll", "Payroll")
                         .WithMany("Payslips")
                         .HasForeignKey("PayrollId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -553,9 +554,9 @@ namespace IManager.Web.Migrations
                     b.Navigation("Payroll");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.TimeCheck", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.TimeTrackings.TimeCheck", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.TimeEntry", "TimeEntry")
+                    b.HasOne("IManager.Web.Domain.Entities.TimeTrackings.TimeEntry", "TimeEntry")
                         .WithMany("Checks")
                         .HasForeignKey("TimeEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -564,9 +565,9 @@ namespace IManager.Web.Migrations
                     b.Navigation("TimeEntry");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.TimeEntry", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.TimeTrackings.TimeEntry", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.User.UserProfile", "Employee")
+                    b.HasOne("IManager.Web.Domain.Entities.Users.UserProfile", "Employee")
                         .WithMany("TimeEntries")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -575,21 +576,21 @@ namespace IManager.Web.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.User.UserProfile", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Users.UserProfile", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.Company", "Company")
+                    b.HasOne("IManager.Web.Domain.Entities.Companies.Company", "Company")
                         .WithMany("Employees")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("IManager.Web.Models.Entities.User.User", null)
+                    b.HasOne("IManager.Web.Domain.Entities.Users.User", null)
                         .WithOne("UserProfile")
-                        .HasForeignKey("IManager.Web.Models.Entities.User.UserProfile", "Id")
+                        .HasForeignKey("IManager.Web.Domain.Entities.Users.UserProfile", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IManager.Web.Models.Entities.JobTitle", "JobTitle")
+                    b.HasOne("IManager.Web.Domain.Entities.Companies.JobTitle", "JobTitle")
                         .WithMany("Employees")
                         .HasForeignKey("JobTitleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -611,7 +612,7 @@ namespace IManager.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.User.User", null)
+                    b.HasOne("IManager.Web.Domain.Entities.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -620,7 +621,7 @@ namespace IManager.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.User.User", null)
+                    b.HasOne("IManager.Web.Domain.Entities.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -635,7 +636,7 @@ namespace IManager.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("IManager.Web.Models.Entities.User.User", null)
+                    b.HasOne("IManager.Web.Domain.Entities.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -644,14 +645,14 @@ namespace IManager.Web.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("IManager.Web.Models.Entities.User.User", null)
+                    b.HasOne("IManager.Web.Domain.Entities.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Company", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.Company", b =>
                 {
                     b.Navigation("Departments");
 
@@ -660,32 +661,32 @@ namespace IManager.Web.Migrations
                     b.Navigation("Payrolls");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Department", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.Department", b =>
                 {
                     b.Navigation("JobTitles");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.JobTitle", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Companies.JobTitle", b =>
                 {
                     b.Navigation("Employees");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.Payroll", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Payrolls.Payroll", b =>
                 {
                     b.Navigation("Payslips");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.TimeEntry", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.TimeTrackings.TimeEntry", b =>
                 {
                     b.Navigation("Checks");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.User.User", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Users.User", b =>
                 {
                     b.Navigation("UserProfile");
                 });
 
-            modelBuilder.Entity("IManager.Web.Models.Entities.User.UserProfile", b =>
+            modelBuilder.Entity("IManager.Web.Domain.Entities.Users.UserProfile", b =>
                 {
                     b.Navigation("Payslips");
 
