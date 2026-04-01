@@ -19,10 +19,8 @@ public class TimeEntry : BaseEntity
 
     [IntegerValidator(MinValue = 2026)]
     public int Year { get; set; }
-
     [NotMapped]
     public TimeEntryStatus Status => Checks.Count % 2 == 0 ? TimeEntryStatus.Valid : TimeEntryStatus.Inconsistent;
-
     [NotMapped]
     public TimeSpan HoursWorked => GetHoursWorked(); 
 
