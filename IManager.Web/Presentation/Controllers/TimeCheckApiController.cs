@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Claims;
 namespace IManager.Web.Presentation.Controllers;
 
@@ -46,16 +47,15 @@ public class TimeCheckApiController : ControllerBase
 
             var timeEntry = (await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
                                                                     te.EmployeeId == userId
-                                                                    && te.Year == request.Timestamp.Date.Year
-                                                                    && te.Month == request.Timestamp.Date.Month))).FirstOrDefault();
+                                                                    && te.Date == DateOnly.FromDateTime(request.Timestamp))))
+                                                                    .FirstOrDefault();
 
             if (timeEntry == null)
             {
                 timeEntry = new TimeEntry
                 {
                     EmployeeId = userId,
-                    Year = request.Timestamp.Date.Year,
-                    Month = request.Timestamp.Date.Month
+                    Date = DateOnly.FromDateTime(request.Timestamp)
                 };
 
                 await _timeEntryRepository.AddAsync(timeEntry);
@@ -141,13 +141,12 @@ public class TimeCheckApiController : ControllerBase
     [HttpGet("today")]
     public async Task<IActionResult> GetTodayTimeChecks()
     {
-        var actualDate = DateTime.UtcNow.Date;
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         var timeEntry = (await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
                                                                 te.EmployeeId == userId
-                                                                && te.Year == actualDate.Year
-                                                                && te.Month == actualDate.Month).Include(te => te.Checks))).FirstOrDefault();
+                                                                && te.Date == DateOnly.FromDateTime(DateTime.UtcNow))
+                                                                .Include(te => te.Checks))).FirstOrDefault();
 
 
         var dto = _mapper.Map<TimeEntryDTO>(timeEntry);

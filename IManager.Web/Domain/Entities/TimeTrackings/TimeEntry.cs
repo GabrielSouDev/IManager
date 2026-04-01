@@ -14,11 +14,8 @@ public class TimeEntry : BaseEntity
 
     public ICollection<TimeCheck> Checks { get; set; } = new List<TimeCheck>();
 
-    [IntegerValidator(MinValue = 1, MaxValue = 12)]
-    public int Month { get; set; }
+    public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
-    [IntegerValidator(MinValue = 2026)]
-    public int Year { get; set; }
     [NotMapped]
     public TimeEntryStatus Status => Checks.Count % 2 == 0 ? TimeEntryStatus.Valid : TimeEntryStatus.Inconsistent;
     [NotMapped]

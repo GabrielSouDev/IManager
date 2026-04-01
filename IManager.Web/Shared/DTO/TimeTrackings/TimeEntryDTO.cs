@@ -5,6 +5,7 @@ namespace IManager.Web.Shared.DTO.TimeTrackings;
 public class TimeEntryDTO
 {
     public Guid Id { get; set; }
+    public DateOnly Date { get; set; }
     public IEnumerable<TimeCheckDTO> Checks { get; set; } = new List<TimeCheckDTO>();
     public TimeEntryStatus Status { get; set; }
     public TimeSpan HoursWorked { get; set; }
