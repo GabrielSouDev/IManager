@@ -86,10 +86,22 @@ public class TimeCheckApiController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var timeEntry = await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
-                                                        te.EmployeeId == userId).Include(te => te.Checks));
+        var timeEntries = await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
+                                                        (te.EmployeeId == userId)
+                                                        && (te.IsCurrent || te.Status == TimeEntryStatus.Pending))
+                                                        .Include(te => te.Checks));
 
-        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(timeEntry);
+        var currents = timeEntries.Where(te => te.IsCurrent).ToList();
+        var pendings = timeEntries.Where(te => te.Status == TimeEntryStatus.Pending).ToList();
+
+        var result = currents.Select(current =>
+        {
+            var pending = pendings.FirstOrDefault(p => p.ParentId == current.Id);
+            return pending ?? current;
+        })
+        .ToList();
+
+        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(result);
         return Ok(dto);
     }
 
@@ -98,10 +110,21 @@ public class TimeCheckApiController : ControllerBase
     public async Task<IActionResult> GetAllNoIncludes()
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var timeEntry = await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
-                                                        te.EmployeeId == userId));
+        var timeEntries = await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
+                                                        (te.EmployeeId == userId)
+                                                        && (te.IsCurrent || te.Status == TimeEntryStatus.Pending)));
 
-        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(timeEntry);
+        var currents = timeEntries.Where(te => te.IsCurrent).ToList();
+        var pendings = timeEntries.Where(te => te.Status == TimeEntryStatus.Pending).ToList();
+
+        var result = currents.Select(current =>
+        {
+            var pending = pendings.FirstOrDefault(p => p.ParentId == current.Id);
+            return pending ?? current;
+        })
+        .ToList();
+
+        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(result);
         return Ok(dto);
     }
 
