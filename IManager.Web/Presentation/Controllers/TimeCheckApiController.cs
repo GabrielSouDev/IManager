@@ -155,10 +155,16 @@ public class TimeCheckApiController : ControllerBase
     {
         var original = await _timeEntryRepository.GetByIdAsync(id);
 
-        if (!ModelState.IsValid && original != null && original.Id == request.Id)
+        if (!ModelState.IsValid && original == null && original.Id != request.Id)
         {
             return BadRequest("TimeCheckRequest invalido.");
         }
+
+        var HasPending = await _timeEntryRepository.ExistsAsync(te =>
+                                                    (te.Id == id && te.Status == TimeEntryStatus.Pending) 
+                                                    || (te.ParentId == id && te.Status == TimeEntryStatus.Pending));
+
+        if(HasPending) return BadRequest("Já existe uma TimeEntry pendente para esta data.");
 
         var entity = _mapper.Map<TimeEntry>(request);
         entity.Id = Guid.NewGuid();
@@ -179,18 +185,18 @@ public class TimeCheckApiController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("today")]
-    public async Task<IActionResult> GetTodayTimeChecks()
+    [HttpGet("get-by-day/{date}")]
+    public async Task<IActionResult> GetTodayTimeChecks(DateOnly date)
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         var timeEntry = (await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
                                                                 te.EmployeeId == userId
-                                                                && te.Date == DateOnly.FromDateTime(DateTime.UtcNow))
+                                                                && te.Date == date)
                                                                 .Include(te => te.Checks))).FirstOrDefault();
 
 
-        var dto = _mapper.Map<TimeEntryDTO>(timeEntry);
+        var dto = timeEntry != null? _mapper.Map<TimeEntryDTO>(timeEntry) : new TimeEntryDTO();
         return Ok(dto);
     }
 }
