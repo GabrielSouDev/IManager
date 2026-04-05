@@ -324,6 +324,11 @@ namespace IManager.Web.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     EmployeeId = table.Column<Guid>(type: "uuid", nullable: false),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    IsCurrent = table.Column<bool>(type: "boolean", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AdjustmentReason = table.Column<string>(type: "text", nullable: true),
+                    RejectionReason = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

@@ -137,7 +137,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
         modelBuilder.Entity<TimeEntry>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.HoursWorked).HasColumnType("decimal(18,2)");
 
             entity.HasMany(e => e.Checks)
                   .WithOne(e => e.TimeEntry)
@@ -146,7 +145,7 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             
             entity.Ignore(te => te.HoursWorked);
 
-            entity.Ignore(te => te.Status);
+            entity.Ignore(te => te.IsConsistent);
         });
 
         // TimeCheck

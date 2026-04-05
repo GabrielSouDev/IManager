@@ -6,7 +6,10 @@ public class TimeEntryDTO
 {
     public Guid Id { get; set; }
     public DateOnly Date { get; set; }
-    public IEnumerable<TimeCheckDTO> Checks { get; set; } = new List<TimeCheckDTO>();
+    public List<TimeCheckDTO> Checks { get; set; } = new List<TimeCheckDTO>();
+    public bool IsConsistent { get; set; }
     public TimeEntryStatus Status { get; set; }
     public TimeSpan HoursWorked { get; set; }
+    public string? AdjustmentReason { get; set; }
+    public string? RejectionReason { get; set; }
 }

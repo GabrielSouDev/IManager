@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IManager.Web.Domain.Entities.TimeTrackings;
+using IManager.Web.Domain.Enums;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Shared.DTO.TimeTrackings;
@@ -93,7 +94,19 @@ public class TimeCheckApiController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [HttpGet("/{id}")]
+    [HttpGet("all-entries-no-includes")]
+    public async Task<IActionResult> GetAllNoIncludes()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var timeEntry = await _timeEntryRepository.GetAllAsync(q => q.Where(te =>
+                                                        te.EmployeeId == userId));
+
+        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(timeEntry);
+        return Ok(dto);
+    }
+
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
         if (id == Guid.Empty)
@@ -103,7 +116,7 @@ public class TimeCheckApiController : ControllerBase
         if(timeEntry is null)
             return NotFound();
 
-        var dto = _mapper.Map<IEnumerable<TimeEntryDTO>>(timeEntry);
+        var dto = _mapper.Map<TimeEntryDTO>(timeEntry);
         return Ok(dto);
     }
 
@@ -130,12 +143,40 @@ public class TimeCheckApiController : ControllerBase
         }
 
         var entity = _mapper.Map<TimeCheck>(request);
+        entity.Timestamp = DateTime.SpecifyKind(entity.Timestamp, DateTimeKind.Utc);
 
         await _timeCheckRepository.UpdateAsync(entity);
         return NoContent();
     }
 
-   
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [HttpPut("timeentry/{id}")]
+    public async Task<IActionResult> UpdateTimeEntry(TimeEntryDTO request, Guid id)
+    {
+        var original = await _timeEntryRepository.GetByIdAsync(id);
+
+        if (!ModelState.IsValid && original != null && original.Id == request.Id)
+        {
+            return BadRequest("TimeCheckRequest invalido.");
+        }
+
+        var entity = _mapper.Map<TimeEntry>(request);
+        entity.Id = Guid.NewGuid();
+        entity.EmployeeId = original!.EmployeeId;
+        entity.Status = TimeEntryStatus.Pending;
+        entity.IsCurrent = false;
+        entity.ParentId = original.Id;
+
+        foreach (var check in entity.Checks)
+        {
+            check.Id = Guid.NewGuid();
+            check.Timestamp = DateTime.SpecifyKind(check.Timestamp, DateTimeKind.Utc);
+        }
+        entity.Checks.OrderBy(c => c.Timestamp);
+
+        await _timeEntryRepository.AddAsync(entity);
+        return NoContent();
+    }
 
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("today")]

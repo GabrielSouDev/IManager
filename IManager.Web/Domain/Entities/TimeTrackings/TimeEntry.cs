@@ -15,22 +15,28 @@ public class TimeEntry : BaseEntity
     public ICollection<TimeCheck> Checks { get; set; } = new List<TimeCheck>();
 
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+    public TimeEntryStatus Status { get; set; } = TimeEntryStatus.Accepted;
+    public bool IsCurrent { get; set; } = true;
+    public Guid? ParentId { get; set; }
+    public string? AdjustmentReason { get; set; }
+    public string? RejectionReason { get; set; }
 
     [NotMapped]
-    public TimeEntryStatus Status => Checks.Count % 2 == 0 ? TimeEntryStatus.Valid : TimeEntryStatus.Inconsistent;
+    public bool IsConsistent => Checks.Count % 2 == 0 ? true : false; 
+
     [NotMapped]
     public TimeSpan HoursWorked => GetHoursWorked(); 
 
     private TimeSpan GetHoursWorked()
     {
         var totalHours = TimeSpan.Zero;
-        if (Checks.Count == 0)
+        if (Checks.Count <= 1)
             return totalHours;
 
         var timestamps = Checks.Select(c => c.Timestamp.TimeOfDay).OrderBy(ts => ts);
         var checks = new Stack<TimeSpan>(timestamps);
 
-        if(Status == TimeEntryStatus.Inconsistent)
+        if(!IsConsistent)
             checks.Pop();
 
         for (int i = checks.Count; i > 0; i -= 2)

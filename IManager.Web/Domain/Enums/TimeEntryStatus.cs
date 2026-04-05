@@ -2,6 +2,7 @@
 
 public enum TimeEntryStatus
 {
-    Inconsistent,
-    Valid
+    Accepted,
+    Rejected,
+    Pending
 }
