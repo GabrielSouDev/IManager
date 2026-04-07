@@ -4,99 +4,136 @@
     ViewData["Title"] = "Usuarios";
 }
 
-<h1>Index</h1>
+<div class="mb-3">
+    <a class="btn btn-sm btn-table" href="/Account/Register">Registrar Usuario</a>
+</div>
 
-<p>
-    <a asp-controller="Account" asp-action="Register">Criar Usuario</a>
-</p>
-<table class="table">
-    <thead>
+<table id="table" class="table table-hover">
+    <thead class="table-light">
         <tr>
-            <th>
-                Nome Completo
-            </th>
-            <th>
-                CPF
-            </th>
-            <th>
-                Data de Nascimento
-            </th>
-            @if(User.IsInRole(Role.Staff))
+            <th>Nome Completo</th>
+            <th>CPF</th>
+            <th>Data de Nascimento</th>
+
+            @if (User.IsInRole(Role.Staff))
             {
-                <th>
-                    Empresa
-                </th>
-                <th>
-                    CNPJ
-                </th>
+                <th>Empresa</th>
+                <th>CNPJ</th>
             }
             else
             {
-                <th>
-                    Salario Base
-                </th>
+                <th>Salario Base</th>
             }
-            <th>
-                Setor
-            </th>
-            <th>
-                Cargo
-            </th>
-            <th>
-                Perfl de Acesso
-            </th>
-            <th>
-                Ativo
-            </th>
-            <th></th>
+
+            <th>Setor</th>
+            <th>Cargo</th>
+            <th>Perfil de Acesso</th>
+            <th>Ativo</th>
         </tr>
     </thead>
+
     <tbody>
-    @foreach (var item in Model) 
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DocumentNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.BirthDate)
-            </td>
-            @if(User.IsInRole(Role.Staff))
+        @foreach (var item in Model)
+        {
+            <tr data-id="@item.Id">
+                <td>@item.FullName</td>
+                <td>@item.DocumentNumber</td>
+                <td>@item.BirthDate.ToString("dd/MM/yyyy")</td>
+
+                @if (User.IsInRole(Role.Staff))
                 {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.JobTitle.Department.Company.TradeName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.JobTitle.Department.Company.DocumentNumber)
-                    </td>
+                    <td>@item.JobTitle.Department.Company.TradeName</td>
+                    <td>@item.JobTitle.Department.Company.DocumentNumber</td>
                 }
-            else
+                else
                 {
-                    <td>
-                        @Html.DisplayFor(modelItem => item.BaseSalary)
-                    </td>
+                    <td>@item.BaseSalary</td>
                 }
-            <td>
-                @Html.DisplayFor(modelItem => item.JobTitle.Department.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.JobTitle.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Role)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Desativar</a>
-            </td>
-        </tr>
-    }
+
+                <td>@item.JobTitle.Department.Name</td>
+                <td>@item.JobTitle.Name</td>
+                <td>@item.Role</td>
+
+                <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<div class="btn-group mt-3 gap-1" role="group">
+    <button id="btn-edit" class="btn btn-sm btn-primary" disabled>
+        Editar
+    </button>
+    <button id="btn-details" class="btn btn-sm btn-primary" disabled>
+        Detalhes
+    </button>
+    <button id="btn-delete" class="btn btn-sm btn-danger" disabled>
+        Desativar
+    </button>
+</div>
+
+<script>
+    let selectedId = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const table = document.getElementById("table");
+        const rows = document.querySelectorAll("#table tbody tr");
+
+        const btnEdit = document.getElementById("btn-edit");
+        const btnDetails = document.getElementById("btn-details");
+        const btnDelete = document.getElementById("btn-delete");
+
+        function clearSelection() {
+            rows.forEach(r => r.classList.remove("selected"));
+            selectedId = null;
+
+            btnEdit.disabled = true;
+            btnDetails.disabled = true;
+            btnDelete.disabled = true;
+        }
+
+        rows.forEach(function(row) {
+            row.addEventListener("click", function(event) {
+                event.stopPropagation();
+
+                if (this.classList.contains("selected")) {
+                    clearSelection();
+                    return;
+                }
+
+                clearSelection();
+
+                this.classList.add("selected");
+                selectedId = this.dataset.id;
+
+                btnEdit.disabled = false;
+                btnDetails.disabled = false;
+                btnDelete.disabled = false;
+            });
+        });
+
+        document.addEventListener("click", function(event) {
+            if (!table.contains(event.target)) {
+                clearSelection();
+            }
+        });
+
+        btnEdit.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Users/Edit/${selectedId}`;
+            }
+        });
+
+        btnDetails.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Users/Details/${selectedId}`;
+            }
+        });
+
+        btnDelete.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Users/Delete/${selectedId}`;
+            }
+        });
+    });
+</script>

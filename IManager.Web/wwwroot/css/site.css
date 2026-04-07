@@ -300,3 +300,39 @@ footer {
         width: 0%;
     }
 }
+
+/* table */
+#table tbody tr {
+    cursor: pointer;
+}
+
+
+#table tbody tr.selected > td,
+#table tbody tr.selected:hover > td {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+}
+
+
+.btn-table {
+    color: white;
+    background-color: #0d6efd;
+}
+
+.btn-table:hover {
+    color: #fff;
+    background-color: #0b5ed7;
+}
+
+.btn {
+    border-radius: 0.5rem;
+}
+
+.btn-group .btn {
+    padding: 0.45rem 0.9rem;
+    font-weight: 500;
+}
+
+button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
