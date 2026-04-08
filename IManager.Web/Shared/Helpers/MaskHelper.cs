@@ -3,8 +3,10 @@ using System.Text;
 
 namespace IManager.Web.Shared.Helpers;
 
-public static class DocumentMaskHelper
+public static class MaskHelper
 {
+    private static readonly CultureInfo PtBr = new("pt-BR");
+
     public static string MaskCpf(string value)
     {
         var digits = OnlyDigits(value).PadLeft(11, '0');
@@ -25,16 +27,9 @@ public static class DocumentMaskHelper
         return $"{digits[..2]}.{digits[2..5]}.{digits[5..8]}/{digits[8..12]}-{digits[12..14]}";
     }
 
-    public static string MaskDocument(string value)
+    public static string MaskCurrency(decimal value)
     {
-        var digits = OnlyDigits(value);
-
-        return digits.Length switch
-        {
-            <= 11 => MaskCpf(digits),
-            <= 14 => MaskCnpj(digits),
-            _ => value
-        };
+        return value.ToString("C", PtBr);
     }
 
     private static string OnlyDigits(string value)

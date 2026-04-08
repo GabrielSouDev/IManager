@@ -44,17 +44,17 @@
         {
             <tr data-id="@item.Id">
                 <td>@item.FullName</td>
-                <td>@(DocumentMaskHelper.MaskCpf(item.DocumentNumber))</td>
+                <td>@(MaskHelper.MaskCpf(item.DocumentNumber))</td>
                 <td>@item.BirthDate.ToString("dd/MM/yyyy")</td>
 
                 @if (User.IsInRole(Role.Staff))
                 {
                     <td>@item.JobTitle.Department.Company.TradeName</td>
-                    <td>@(DocumentMaskHelper.MaskCnpj(item.JobTitle.Department.Company.DocumentNumber))</td>
+                    <td>@(MaskHelper.MaskCnpj(item.JobTitle.Department.Company.DocumentNumber))</td>
                 }
                 else
                 {
-                    <td>@item.BaseSalary</td>
+                    <td>@(MaskHelper.MaskCurrency(item.BaseSalary))</td>
                 }
 
                 <td>@item.JobTitle.Department.Name</td>
