@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IManager.Web.Data.Seeder.SeedDatas;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Entities.TimeTrackings;
 using IManager.Web.Domain.Entities.Users;
@@ -14,6 +15,11 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        CreateMap<CompanySeedData, Company>();
+        CreateMap<DepartmentSeedData, Department>();
+        CreateMap<JobTitleSeedData, JobTitle>();
+        CreateMap<UserSeedData, UserProfile>();
+
         CreateMap<UserProfile, AccountViewModel>().ReverseMap();
         CreateMap<UserProfile, EditAccountViewModel>()
             .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.JobTitle.Department.Company.Id))

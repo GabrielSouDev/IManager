@@ -1,13 +1,21 @@
-﻿using IManager.Web.Domain.Consts;
+﻿using AutoMapper;
+using IManager.Web.Data.Seeder;
+using IManager.Web.Domain.Consts;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Entities.Payrolls;
 using IManager.Web.Domain.Entities.TimeTrackings;
 using IManager.Web.Domain.Entities.Users;
+using IManager.Web.Domain.Interfaces.Persistence;
+using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.Configurations;
 using IManager.Web.Presentation.ViewModels.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 namespace IManager.Web.Data.Persistence;
@@ -186,109 +194,6 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             entity.Ignore(e => e.TotalDeductions);
             entity.Ignore(e => e.NetSalary);
         });
-    }
-    #endregion
-
-    #region SeedDataAsync
-    public async Task SeedDataAsync(UserManager<User> userManager, RoleManager<IdentityRole<Guid>> roleManager, RegisterViewModel adminRequest)
-    {
-        var retries = 1;
-        while (true)
-        {
-            try
-            {
-                await Database.MigrateAsync();
-                break;
-            }
-            catch (Npgsql.NpgsqlException ex)
-            {
-                Console.WriteLine($"# {retries} - Tentativa de conexão ao Postgres falha!  Error: {ex.Message}");
-                retries++;
-                if (retries >= 10) throw;
-                await Task.Delay(2000);
-            }
-        }
-
-        foreach (var role in Role.All)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
-            }
-        }
-
-        if (userManager.Users.Any()) return;
-
-        using var transaction = Database.BeginTransaction();
-        try
-        {
-            await SeedStaffUserAsync(userManager, roleManager, adminRequest);
-
-            await transaction.CommitAsync();
-        }
-        catch (Exception)
-        {
-            transaction.Rollback();
-            throw;
-        }
-    }
-
-    private async Task SeedStaffUserAsync(UserManager<User> userManager, RoleManager<IdentityRole<Guid>> roleManager, RegisterViewModel adminRequest)
-    {
-        var staffCompany = new Company
-        {
-            DocumentNumber = "00.000.000/0001-00",
-            LegalName = "IManager",
-            TradeName = "IManager",
-            FoundedAt = new DateOnly(2000, 01, 01)
-        };
-        await Companies.AddAsync(staffCompany);
-        await SaveChangesAsync();
-
-        var staffDepartment = new Department
-        {
-            Name = "TI",
-            CompanyId = staffCompany.Id
-        };
-        await Departments.AddAsync(staffDepartment);
-        await SaveChangesAsync();
-
-        var staffJobTitle = new JobTitle
-        {
-            Name = "Administrador",
-            DepartmentId = staffDepartment.Id
-        };
-        await JobTitles.AddAsync(staffJobTitle);
-        await SaveChangesAsync();
-
-        var adminUser = new User { UserName = adminRequest.Email, Email = adminRequest.Email, EmailConfirmed = true };
-        await userManager.CreateAsync(adminUser, adminRequest.Password);
-        await userManager.AddToRoleAsync(adminUser, Role.Staff);
-
-        var adminProfile = new UserProfile()
-        {
-            Id = adminUser.Id,
-            FullName = "Staff User",
-            DocumentNumber = "123.456.789-09",
-            BirthDate = new DateOnly(2000, 01, 01),
-            CompanyId = staffCompany.Id,
-            JobTitleId = staffJobTitle.Id,
-            Role = Role.Staff
-        };
-
-        await userManager.AddClaimsAsync(adminUser, new List<Claim>
-            {
-                new("FullName", adminProfile?.FullName ?? ""),
-                new("CompanyId", staffCompany.Id.ToString() ?? "Null"),
-                new("CompanyTradeName", staffCompany.TradeName.ToString() ?? "Null"),
-                new("DepartmentId", staffDepartment.Id.ToString() ?? "Null"),
-                new("Department", staffDepartment.Name.ToString() ?? "Null"),
-                new("JobTitleId", staffJobTitle.Id.ToString() ?? "Null"),
-                new("JobTitle", staffJobTitle.Name.ToString() ?? "Null")
-            });
-
-        await UserProfiles.AddAsync(adminProfile!);
-        await SaveChangesAsync();
     }
     #endregion
 }

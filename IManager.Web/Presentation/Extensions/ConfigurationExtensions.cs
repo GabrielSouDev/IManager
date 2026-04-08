@@ -7,5 +7,9 @@ public static class ConfigurationExtensions
     public static void AddConfigurations(this WebApplicationBuilder builder)
     {
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+
+        builder.Services.Configure<DemoProfilesOptions>(
+            builder.Configuration.GetSection("DemoProfiles")
+        );
     }
 }

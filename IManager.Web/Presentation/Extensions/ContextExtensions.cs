@@ -1,4 +1,6 @@
 ﻿using IManager.Web.Data.Persistence;
+using IManager.Web.Data.Seeder.Factory;
+using IManager.Web.Data.Seeder.Interfaces;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Presentation.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +14,13 @@ public static class ContextExtensions
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        builder.Services.AddScoped<IDemoSeeder, DemoSeeder>();
+        builder.Services.AddScoped<CompanySeeder>();
+        builder.Services.AddScoped<DepartmentSeeder>();
+        builder.Services.AddScoped<JobTitleSeeder>();
+        builder.Services.AddScoped<UserSeeder>();
+
 
         var postgresSettings = builder.Configuration.GetSection("Postgres").Get<PostgresSettings>() ??
                                         throw new Exception("Não foi possivel configurar o Postgres.");
