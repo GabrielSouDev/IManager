@@ -185,13 +185,64 @@ public static class DemoSeedBuilder
         => new DateOnly(RandomNumberGenerator.GetInt32(1990, 2021), RandomNumberGenerator.GetInt32(1, 13), 1);
 
     private static string GenerateCpf()
-        => string.Concat(Enumerable.Range(0, 11).Select(_ => RandomNumberGenerator.GetInt32(0, 10)));
+    {
+        int[] digits = new int[11];
+
+        for (int i = 0; i < 9; i++)
+            digits[i] = RandomNumberGenerator.GetInt32(0, 10);
+
+        digits[9] = CalculateCpfDigit(digits, 9);
+
+        digits[10] = CalculateCpfDigit(digits, 10);
+
+        return string.Concat(digits);
+    }
+
+    private static int CalculateCpfDigit(int[] digits, int length)
+    {
+        int sum = 0;
+        int weight = length + 1;
+
+        for (int i = 0; i < length; i++)
+            sum += digits[i] * weight--;
+
+        int remainder = (sum * 10) % 11;
+        return remainder == 10 ? 0 : remainder;
+    }
 
     private static string GenerateCnpj()
-        => string.Concat(Enumerable.Range(0, 14).Select(_ => RandomNumberGenerator.GetInt32(0, 10)));
+    {
+        int[] digits = new int[14];
+
+        // Gera os 12 primeiros dígitos
+        for (int i = 0; i < 12; i++)
+            digits[i] = RandomNumberGenerator.GetInt32(0, 10);
+
+        // Primeiro dígito verificador
+        digits[12] = CalculateCnpjDigit(digits, 12);
+
+        // Segundo dígito verificador
+        digits[13] = CalculateCnpjDigit(digits, 13);
+
+        return string.Concat(digits);
+    }
+
+    private static int CalculateCnpjDigit(int[] digits, int length)
+    {
+        int[] weights = length == 12
+            ? new[] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 }
+            : new[] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+
+        int sum = 0;
+        for (int i = 0; i < length; i++)
+            sum += digits[i] * weights[i];
+
+        int remainder = sum % 11;
+        return remainder < 2 ? 0 : 11 - remainder;
+    }
 
     private static string NormalizeKey(string text)
-        => RemoveAccents(text).Replace(" ", "").ToLowerInvariant();
+            => RemoveAccents(text).Replace(" ", "").ToLowerInvariant();
 
     private static string RemoveAccents(string text)
     {
