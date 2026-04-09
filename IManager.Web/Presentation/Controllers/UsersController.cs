@@ -59,42 +59,37 @@ namespace IManager.Web.Presentation.Controllers
             return View(model);
         }
 
-        //// POST: Users/Edit/5
-        //// To protect from overposting attacks, enable the specific properties you want to bind to.
-        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(Guid id, [Bind("FullName,DocumentNumber,BirthDate,IsActive,DeletedAt,CompanyId,JobTitleId,BaseSalary,Id,CreatedAt,LastModified")] UserProfile userProfile)
-        //{
-        //    if (id != userProfile.Id)
-        //    {
-        //        return NotFound();
-        //    }
+        // POST: Users/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, EditAccountViewModel model)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
+            }
 
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(userProfile);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!UserProfileExists(userProfile.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "DocumentNumber", userProfile.CompanyId);
-        //    ViewData["JobTitleId"] = new SelectList(_context.JobTitles, "Id", "Name", userProfile.JobTitleId);
-        //    return View(userProfile);
-        //}
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+                return View(model);
+            }
+
+            var result = await _accountService.EditAccountAsync(id, model);
+                
+            if (result.Succeeded)
+            {
+                TempData[ToastMessages.Success] = "Dados atualizados com sucesso!";
+
+                return RedirectToAction("Details", new {id});
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error);
+
+            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+            return View(model);
+        }
 
         //// GET: Users/Delete/5
         //public async Task<IActionResult> Delete(Guid? id)

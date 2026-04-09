@@ -209,7 +209,99 @@ public class AccountService : IAccountService
             return Result.Fail("Erro ao atualizar perfil. Tente novamente.");
         }
     }
+    #endregion
 
+    #region Editar User
+    public async Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model)
+    {
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user is null)
+                return Result.Fail("Usuário não encontrado.");
+
+            if(user.PhoneNumber != model.PhoneNumber)
+            {
+                user.PhoneNumber = model.PhoneNumber;
+                var userUpdate = await _userManager.UpdateAsync(user);
+
+                if (!userUpdate.Succeeded)
+                    return Result.Fail("Erro ao atualizar usuário.");
+            }
+            
+            var userProfile = await _userProfileRepository.GetByIdAsync(user.Id);
+            if (userProfile is null)
+                return Result.Fail("Perfil não encontrado.");
+
+            userProfile.FullName = model.FullName;
+            userProfile.DocumentNumber = model.DocumentNumber;
+            userProfile.BirthDate = model.BirthDate;
+            userProfile.JobTitleId = model.JobTitleId;
+            userProfile.BaseSalary = model.BaseSalary;
+
+            await _userProfileRepository.UpdateAsync(userProfile);
+
+            if (model.Email != user.Email)
+            {
+                user.Email = model.Email;
+                user.NormalizedEmail = model.Email.ToUpperInvariant();
+                user.UserName = model.Email;
+                user.NormalizedUserName = model.Email.ToUpperInvariant();
+                user.EmailConfirmed = true; 
+
+                var result = await _userManager.UpdateAsync(user);
+                if(!result.Succeeded)
+                    return Result.Fail("Falha ao atualizar e-mail.");
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var newRole = model.Role.ToString();
+
+            if (!currentRoles.Contains(newRole))
+            {
+
+                if (currentRoles.Any())
+                {
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    if (!removeResult.Succeeded)
+                        return Result.Fail("Erro ao remover perfil anterior.");
+                }
+
+
+                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                if (!addResult.Succeeded)
+                    return Result.Fail("Erro ao atribuir novo perfil ao usuário.");
+
+            }
+
+            var jobTitle = await _jobTitleRepository.GetByIdAsync(
+                userProfile.JobTitleId,
+                q => q.Include(j => j.Department)
+                      .ThenInclude(d => d.Company)
+            );
+
+            if (jobTitle is null)
+                return Result.Fail("Cargo não localizado.");
+
+            await UpdateClaimAsync(user, "FullName", userProfile.FullName);
+            await UpdateClaimAsync(user, "CompanyId", jobTitle.Department.Company.Id.ToString());
+            await UpdateClaimAsync(user, "CompanyTradeName", jobTitle.Department.Company.TradeName);
+            await UpdateClaimAsync(user, "DepartmentId", jobTitle.Department.Id.ToString());
+            await UpdateClaimAsync(user, "Department", jobTitle.Department.Name);
+            await UpdateClaimAsync(user, "JobTitleId", jobTitle.Id.ToString());
+            await UpdateClaimAsync(user, "JobTitle", jobTitle.Name);
+
+            await _unitOfWork.CommitAsync();
+            return Result.Ok();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            return Result.Fail("Erro ao atualizar perfil. Tente novamente.");
+        }
+    }
     #endregion
 
     #region Troca de E-mail
@@ -356,6 +448,22 @@ public class AccountService : IAccountService
             ?? throw new ArgumentException("Usuário não encontrado!");
 
         return _mapper.Map<AccountDetailsViewModel>(userProfile);
+    }
+
+    private async Task UpdateClaimAsync(User user, string type, string value)
+    {
+        var claims = await _userManager.GetClaimsAsync(user);
+        var existing = claims.FirstOrDefault(c => c.Type == type);
+
+        if (existing != null)
+        {
+            if (existing.Value != value)
+                await _userManager.ReplaceClaimAsync(user, existing, new Claim(type, value));
+        }
+        else
+        {
+            await _userManager.AddClaimAsync(user, new Claim(type, value));
+        }
     }
     #endregion
 }

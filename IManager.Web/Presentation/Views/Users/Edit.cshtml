@@ -16,6 +16,7 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="form-group">
+                    <input type="hidden" asp-for="CompanyId" />
                     <label>Departamento</label>
 
                     <select id="departmentSelect" asp-for="DepartmentId" class="form-control">
@@ -130,68 +131,115 @@
 
     <partial name="_ValidationScriptsPartial" />
 
-    <script type="text/javascript">
-        window.addEventListener('DOMContentLoaded', function () {
+    <script>
+        /* ============================
+         * DADOS (Razor -> JS)
+         * ============================ */
+        const departments = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(
+                            departments,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                            })
+            );
 
-            const display = document.getElementById('salaryDisplay');
-            const hidden = document.getElementById('salaryHidden');
+        const selectedJobTitleId = "@Model.JobTitleId";
 
-            if (hidden.value) {
-                let raw = hidden.value.replace(/\D/g, '');
-                let parts = (parseInt(raw, 10) / 100).toFixed(2).split('.');
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                display.value = 'R$ ' + parts[0] + ',' + parts[1];
+        const departmentSelect = document.getElementById("departmentSelect");
+        const jobTitleSelect   = document.getElementById("jobTitleSelect");
+
+        const cpfInput   = document.getElementById("cpf");
+        const phoneInput = document.getElementById("phone");
+
+        const salaryDisplay = document.getElementById("salaryDisplay");
+        const salaryHidden  = document.getElementById("salaryHidden");
+
+        const maskCPF = (value) => {
+            value = value.replace(/\D/g, "").slice(0, 11);
+
+            if (value.length <= 3) return value;
+            if (value.length <= 6) return value.replace(/(\d{3})(\d+)/, "$1.$2");
+            if (value.length <= 9) return value.replace(/(\d{3})(\d{3})(\d+)/, "$1.$2.$3");
+
+            return value.replace(
+                /(\d{3})(\d{3})(\d{3})(\d{0,2})/,
+                "$1.$2.$3-$4"
+            );
+        };
+
+        const maskPhone = (value) => {
+            value = value.replace(/\D/g, "").slice(0, 11);
+
+            if (value.length <= 2) return value;
+            if (value.length <= 6) return value.replace(/(\d{2})(\d+)/, "($1) $2");
+            if (value.length <= 10) return value.replace(/(\d{2})(\d{4})(\d+)/, "($1) $2-$3");
+
+            return value.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+        };
+
+        const formatMoney = (raw) => {
+            raw = raw.replace(/\D/g, "");
+            if (!raw) return "";
+
+            const value = (parseInt(raw, 10) / 100).toFixed(2);
+            return value.replace(".", ",");
+        };
+
+        const loadJobTitles = (departmentId) => {
+            jobTitleSelect.innerHTML = `<option value="">Selecione</option>`;
+
+            if (!departmentId) return;
+
+            const department = departments.find(d => d.id === departmentId);
+            if (!department) return;
+
+            department.jobTitles.forEach(job => {
+                const option = new Option(job.name, job.id);
+                option.selected = job.id === selectedJobTitleId;
+                jobTitleSelect.add(option);
+            });
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            /* 🔹 Inicializa JobTitles */
+            if (departmentSelect.value) {
+                loadJobTitles(departmentSelect.value);
             }
 
-            display.addEventListener('input', function (e) {
-                let raw = e.target.value.replace(/\D/g, '');
-                if (!raw) {
-                    e.target.value = '';
-                    hidden.value = '';
-                    return;
-                }
-
-                let parts = (parseInt(raw, 10) / 100).toFixed(2).split('.');
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-                e.target.value = 'R$ ' + parts[0] + ',' + parts[1];
-                hidden.value = parts[0].replace(/\./g, '') + ',' + parts[1];
+            departmentSelect.addEventListener("change", e => {
+                loadJobTitles(e.target.value);
             });
 
+            /* 🔹 CPF */
+            if (cpfInput?.value) {
+                cpfInput.value = maskCPF(cpfInput.value);
+            }
+
+            cpfInput?.addEventListener("input", e => {
+                e.target.value = maskCPF(e.target.value);
+            });
+
+            /* 🔹 Telefone */
+            if (phoneInput?.value) {
+                phoneInput.value = maskPhone(phoneInput.value);
+            }
+
+            phoneInput?.addEventListener("input", e => {
+                e.target.value = maskPhone(e.target.value);
+            });
+
+            /* 🔹 Salário */
+            if (salaryHidden.value) {
+                salaryDisplay.value = "R$ " + formatMoney(salaryHidden.value);
+            }
+
+            salaryDisplay.addEventListener("input", e => {
+                const formatted = formatMoney(e.target.value);
+                salaryHidden.value = formatted;
+                e.target.value = formatted ? `R$ ${formatted}` : "";
+            });
         });
-
-        function maskCPF(v){
-            v=v.replace(/\D/g,'').slice(0,11)
-            return v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4')
-        }
-
-        function maskPhone(v){
-            v=v.replace(/\D/g,'').slice(0,11)
-            return v.length<=10
-            ? v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3')
-            : v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3')
-        }
-
-        document.getElementById('cpf')?.addEventListener('input',e=>e.target.value=maskCPF(e.target.value))
-        document.getElementById('phone')?.addEventListener('input',e=>e.target.value=maskPhone(e.target.value))
-
-        const departments=@Html.Raw(System.Text.Json.JsonSerializer.Serialize(departments))
-
-        const departmentSelect=document.getElementById("departmentSelect")
-        const jobTitleSelect=document.getElementById("jobTitleSelect")
-
-        window?.addEventListener("DOMContentLoaded",() => {
-
-            const department=departments.find(d=>d.id==this.value)
-            if(!department) return
-
-            department.JobTitles.forEach(job=>{
-                const option=document.createElement("option")
-                option.value=job.Id
-                option.text=job.Name
-                jobTitleSelect.appendChild(option)
-            })
-
-        })
     </script>
 }
