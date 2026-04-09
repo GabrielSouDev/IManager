@@ -64,18 +64,8 @@ public class AccountService : IAccountService
                 await _unitOfWork.RollbackAsync();
                 return Result.Fail(result.Errors.Select(r => r.Description));
             }
+            var userProfile = _mapper.Map<UserProfile>(model);
 
-            var userProfile = new UserProfile()
-            {
-                Id = user.Id,
-                CompanyId = model.CompanyId,
-                JobTitleId = model.JobTitleId,
-                FullName = model.FullName,
-                DocumentNumber = model.DocumentNumber,
-                BirthDate = model.BirthDate,
-                Role = model.Role,
-                BaseSalary = model.BaseSalary
-            };
             await _userProfileRepository.AddAsync(userProfile);
 
             var jobTitle = await _jobTitleRepository.GetByIdAsync(userProfile.JobTitleId, q => 
@@ -182,13 +172,7 @@ public class AccountService : IAccountService
         var userProfile = await _userProfileRepository.GetByIdAsync(user.Id)
             ?? throw new ArgumentException("Usuário não encontrado!");
 
-        return new AccountDetailsViewModel()
-        {
-            FullName = userProfile.FullName,
-            DocumentNumber = userProfile.DocumentNumber,
-            BirthDate = userProfile.BirthDate,
-            PhoneNumber = user.PhoneNumber
-        };
+        return _mapper.Map<AccountDetailsViewModel>(userProfile);
     }
 
     public async Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model)
@@ -362,6 +346,16 @@ public class AccountService : IAccountService
         editAccountCiewModel.PhoneNumber = user!.PhoneNumber!;
 
         return editAccountCiewModel;
+    }
+
+    public async Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByIdAsync(Guid id)
+    {
+        var user = await GetByIdAsync(id.ToString()) ?? throw new ArgumentException("Usuário não encontrado!");
+
+        var userProfile = await _userProfileRepository.GetByIdAsync(user.Id, q => q.Include(u => u.JobTitle))
+            ?? throw new ArgumentException("Usuário não encontrado!");
+
+        return _mapper.Map<AccountDetailsViewModel>(userProfile);
     }
     #endregion
 }

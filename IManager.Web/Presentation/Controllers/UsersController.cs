@@ -37,7 +37,7 @@ namespace IManager.Web.Presentation.Controllers
                 return NotFound();
             }
 
-            var userProfile = await _accountService.GetByIdAsync(id.Value.ToString());
+            var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
             if (userProfile == null)
             {
                 return NotFound();

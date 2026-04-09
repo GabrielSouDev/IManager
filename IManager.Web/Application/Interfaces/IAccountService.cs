@@ -21,7 +21,8 @@ public interface IAccountService
     Task<Result> ConfirmResetPasswordTokenAsync(ResetPasswordViewModel model);
     Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail);
     Task<Result> ConfirmChangeEmailAsync(string currentEmail, string newEmail, string token);
-    Task SendChangeEmailLinkAsync(User user, string newEmail, string link);
+    Task SendChangeEmailLinkAsync(User user, string newEmail, string link); 
+    Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByIdAsync(Guid id);
     Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByEmailAsync(string email);
     Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model);
     Task<Result> ChangePasswordAsync(string email, ChangePasswordViewModel model);

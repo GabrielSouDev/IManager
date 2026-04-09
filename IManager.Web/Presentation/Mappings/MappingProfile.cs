@@ -21,6 +21,9 @@ public class MappingProfile : Profile
         CreateMap<UserSeedData, UserProfile>();
 
         CreateMap<UserProfile, AccountViewModel>().ReverseMap();
+        CreateMap<UserProfile, AccountDetailsViewModel>()
+            .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.JobTitle.Name))
+            .ReverseMap();
         CreateMap<UserProfile, EditAccountViewModel>()
             .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.JobTitle.Department.Company.Id))
             .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.JobTitle.Department.Id))
