@@ -87,48 +87,44 @@ namespace IManager.Web.Presentation.Controllers
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error);
 
-            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+                            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
             return View(model);
         }
 
-        //// GET: Users/Delete/5
-        //public async Task<IActionResult> Delete(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // GET: Users/Delete/5
+        public async Task<IActionResult> Delete(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        //    var userProfile = await _context.UserProfiles
-        //        .Include(u => u.Company)
-        //        .Include(u => u.JobTitle)
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (userProfile == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
+            if (userProfile == null)
+            {
+                return NotFound();
+            }
 
-        //    return View(userProfile);
-        //}
+            return View(userProfile);
+        }
 
-        //// POST: Users/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(Guid id)
-        //{
-        //    var userProfile = await _context.UserProfiles.FindAsync(id);
-        //    if (userProfile != null)
-        //    {
-        //        _context.UserProfiles.Remove(userProfile);
-        //    }
+        // POST: Users/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var result = await _accountService.DeleteAsync(id);
 
-        //    await _context.SaveChangesAsync();
-        //    return RedirectToAction(nameof(Index));
-        //}
+            if (!result.Succeeded)
+            {
+                TempData["Error"] = result.Errors.FirstOrDefault()
+                    ?? "Erro ao desativar usuário.";
 
-        //private bool UserProfileExists(Guid id)
-        //{
-        //    return _context.UserProfiles.Any(e => e.Id == id);
-        //}
+                return RedirectToAction(nameof(Index));
+            }
+
+            TempData["Success"] = "Usuário desativado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

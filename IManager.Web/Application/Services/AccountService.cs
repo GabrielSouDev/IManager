@@ -304,6 +304,35 @@ public class AccountService : IAccountService
     }
     #endregion
 
+    #region Deleter User
+    public async Task<Result> DeleteAsync(Guid id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        var userProfileExists = await _userProfileRepository.ExistsAsync(u => u.Id == id);
+
+
+        if (user is null || !userProfileExists)
+            return Result.Fail("Usuario não encontrado.");
+
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            await _userProfileRepository.DeleteAsync(id);
+
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+
+            await _unitOfWork.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackAsync();
+            return Result.Fail("Falha ao desativar usuario, porfavor tente novamente.");
+        }
+        return Result.Ok();
+    }
+    #endregion
+
     #region Troca de E-mail
 
     public Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail)

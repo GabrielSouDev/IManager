@@ -1,4 +1,4 @@
-﻿@model IManager.Web.Domain.Entities.Users.UserProfile
+﻿@model AccountDetailsViewModel
 
 @{
     ViewData["Title"] = "Delete";
@@ -30,28 +30,10 @@
             @Html.DisplayFor(model => model.BirthDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeletedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeletedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Company)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Company.DocumentNumber)
-        </dd>
-        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.JobTitle)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.JobTitle.Name)
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.JobTitle)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.BaseSalary)
@@ -59,23 +41,11 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.BaseSalary)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LastModified)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LastModified)
-        </dd>
     </dl>
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Deletar" class="btn btn-danger" /> |
+        <a asp-action="Index">Voltar</a>
     </form>
 </div>

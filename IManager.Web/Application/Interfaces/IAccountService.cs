@@ -31,4 +31,5 @@ public interface IAccountService
     Task<PagedResult<AccountViewModel>> GetAllAccountViewModelAsync(int page, int pageSize, Guid? companyId = null, string? search = null);
     Task<EditAccountViewModel> GetEditAccountViewModelByIdAsync(Guid id);
     Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model);
+    Task<Result> DeleteAsync(Guid id);
 }
