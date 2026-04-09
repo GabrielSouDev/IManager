@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using IManager.Web.Domain.Entities.Users;
+using System.Linq.Expressions;
 namespace IManager.Web.Domain.Interfaces.Repositories;
 
 public interface IRepository<T> where T : class
@@ -24,5 +25,5 @@ public interface IRepository<T> where T : class
     Task DeleteRangeAsync(IEnumerable<T> entities);
     // UTILS
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
-    Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+    Task<int> CountAsync(Func<IQueryable<T>, IQueryable<T>>? query = null);
 }

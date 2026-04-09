@@ -22,10 +22,17 @@ public class UserProfileRepository : IUserProfileRepository
         await _context.UserProfiles.AddRangeAsync(entities);
         await _context.SaveChangesAsync();
     }
-    public async Task<int> CountAsync(Expression<Func<UserProfile, bool>>? predicate = null)
-        => predicate is null
-            ? await _context.UserProfiles.CountAsync()
-            : await _context.UserProfiles.CountAsync(predicate);
+    public async Task<int> CountAsync(Func<IQueryable<UserProfile>, IQueryable<UserProfile>>? queryBuilder = null)
+    {
+        IQueryable<UserProfile> query = _context.UserProfiles;
+
+        if (queryBuilder != null)
+        {
+            query = queryBuilder(query);
+        }
+
+        return await query.CountAsync();
+    }
     public async Task DeleteAsync(Guid id)
     {
         var entity = await GetByIdAsync(id);
@@ -76,9 +83,13 @@ public class UserProfileRepository : IUserProfileRepository
         IQueryable<UserProfile> query = _context.UserProfiles;
         if (include != null)
             query = include(query);
+
         if (page.HasValue && pageSize.HasValue)
-            query = query.Skip((page.Value - 1) * pageSize.Value)
+            query = query
+                .OrderBy(e => EF.Property<object>(e, "Id"))
+                .Skip((page.Value - 1) * pageSize.Value)
                          .Take(pageSize.Value);
+
         return await query.ToListAsync();
     }
     public async Task<UserProfile?> GetByIdAsync(Guid id, Func<IQueryable<UserProfile>, IQueryable<UserProfile>>? include = null)

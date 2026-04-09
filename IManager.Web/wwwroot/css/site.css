@@ -302,10 +302,20 @@ footer {
 }
 
 /* table */
+
+#table {
+    table-layout: fixed;
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #table tbody tr {
     cursor: pointer;
 }
-
 
 #table tbody tr.selected > td,
 #table tbody tr.selected:hover > td {

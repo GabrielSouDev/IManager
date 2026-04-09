@@ -1,5 +1,5 @@
 ﻿@using IManager.Web.Shared.Helpers
-@model IEnumerable<IManager.Web.Presentation.ViewModels.Account.AccountViewModel>
+@model PagedResult<AccountViewModel>
 
 @{
     ViewData["Title"] = "Usuarios";
@@ -15,7 +15,7 @@
     <div class="input-group w-25">
         <input type="text"
                name="search"
-               value="@Context.Request.Query["search"]"
+               value="@Model.Search"
                class="form-control"
                placeholder="Pesquisar" />
 
@@ -30,7 +30,7 @@
         <tr>
             <th>Nome Completo</th>
             <th>CPF</th>
-            <th>Data de Nascimento</th>
+            <th>Dt. Nasc.</th>
 
             @if (User.IsInRole(Role.Staff))
             {
@@ -45,15 +45,15 @@
             <th>Setor</th>
             <th>Cargo</th>
             <th>Perfil de Acesso</th>
-            <th>Ativo</th>
+            <th class="text-center">Ativo</th>
         </tr>
     </thead>
 
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.Items)
         {
             <tr data-id="@item.Id">
-                <td>@item.FullName</td>
+                <td class="truncate">@item.FullName</td>
                 <td>@(MaskHelper.MaskCpf(item.DocumentNumber))</td>
                 <td>@item.BirthDate.ToString("dd/MM/yyyy")</td>
 
@@ -77,16 +77,81 @@
     </tbody>
 </table>
 
-<div class="btn-group mt-3 gap-1" role="group">
-    <button id="btn-edit" class="btn btn-sm btn-primary" disabled>
-        Editar
-    </button>
-    <button id="btn-details" class="btn btn-sm btn-primary" disabled>
-        Detalhes
-    </button>
-    <button id="btn-delete" class="btn btn-sm btn-danger" disabled>
-        Desativar
-    </button>
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    <div class="btn-group gap-1" role="group">
+        <button id="btn-edit" class="btn btn-sm btn-primary" disabled>
+            Editar
+        </button>
+        <button id="btn-details" class="btn btn-sm btn-primary" disabled>
+            Detalhes
+        </button>
+        <button id="btn-delete" class="btn btn-sm btn-danger" disabled>
+            Desativar
+        </button>
+    </div>
+
+    @{
+        int total = Model.TotalCount;
+        int pageSize = Model.PageSize;
+        int page = Model.Page;
+
+        int start = total == 0
+            ? 0
+            : ((page - 1) * pageSize) + 1;
+
+        int end = Math.Min(page * pageSize, total);
+    }
+    <div class="d-flex justify-content-between align-items-center mt-3 gap-2">
+        <small class="text-muted">
+            @if (total > 0)
+            {
+                <span>Mostrando @start–@end de @total registros</span>
+            }
+            else
+            {
+                <span>Nenhum registro encontrado</span>
+            }
+        </small>
+        <div class="d-flex align-items-center gap-3">
+            <form method="get" class="m-0 p-0">
+
+                <input type="hidden" name="search" value="@Model.Search" />
+
+                <select name="pageSize"
+                        class="form-select w-auto"
+                        onchange="this.form.submit()">
+                    @foreach (var size in new[] { 10, 25, 50, 100 })
+                    {
+                        <option value="@size" selected="@(size == Model.PageSize)">
+                            @size por página
+                        </option>
+                    }
+                </select>
+            </form>
+
+            @{
+                var totalPages = (int)Math.Ceiling(
+                    (double)Model.TotalCount / Model.PageSize
+                );
+
+                var search = Model.Search?.ToString();
+            }
+            <nav class="m-0 p-0">
+                <ul class="pagination pagination-sm mb-0">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-pageSize="@pageSize"
+                               asp-route-search="@search">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
 </div>
 
 <script>

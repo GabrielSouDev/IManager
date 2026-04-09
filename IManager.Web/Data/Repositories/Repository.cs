@@ -1,5 +1,6 @@
 ﻿using IManager.Web.Data.Persistence;
 using IManager.Web.Domain.Entities;
+using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -24,10 +25,16 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         await _dbSet.AddRangeAsync(entities);
         await _context.SaveChangesAsync();
     }
-    public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
-        => predicate is null
-            ? await _dbSet.CountAsync()
-            : await _dbSet.CountAsync(predicate);
+    public async Task<int> CountAsync(Func<IQueryable<T>, IQueryable<T>>? queryBuilder = null)
+    {
+        IQueryable<T> query = _dbSet;
+        if(queryBuilder != null)
+        {
+            query = queryBuilder(query);
+        }
+
+        return await query.CountAsync();
+    }
     public async Task DeleteAsync(Guid id)
     {
         var entity = await GetByIdAsync(id);
@@ -70,11 +77,18 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         int? pageSize = null)
     {
         IQueryable<T> query = _dbSet;
+
         if (include != null)
             query = include(query);
+
         if (page.HasValue && pageSize.HasValue)
-            query = query.Skip((page.Value - 1) * pageSize.Value)
-                         .Take(pageSize.Value);
+        {
+            query = query
+                .OrderBy(e => EF.Property<object>(e, "Id"))
+                .Skip((page.Value - 1) * pageSize.Value)
+                .Take(pageSize.Value);
+        }
+
         return await query.ToListAsync();
     }
     public async Task<T?> GetByIdAsync(Guid id, Func<IQueryable<T>, IQueryable<T>>? include = null)

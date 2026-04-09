@@ -301,9 +301,9 @@ public class AccountService : IAccountService
         return departmentsHierarchy;
     }
 
-    public async Task<IEnumerable<AccountViewModel>> GetAllAccountViewModelAsync(Guid? companyId = null, string? search = null)
+    public async Task<PagedResult<AccountViewModel>> GetAllAccountViewModelAsync( 
+            int page, int pageSize, Guid? companyId = null, string? search = null)
     {
-
         Func<IQueryable<UserProfile>, IQueryable<UserProfile>> query = q =>
         {
             q = q
@@ -330,10 +330,21 @@ public class AccountService : IAccountService
             return q;
         };
 
-        IEnumerable<UserProfile> userProfiles = await _userProfileRepository.GetAllAsync(query);
+        var totalCount = await _userProfileRepository.CountAsync(query);
+
+        IEnumerable<UserProfile> userProfiles = await _userProfileRepository.GetAllAsync(query, page, pageSize);
         var accountsDetailsViewModel = _mapper.Map<IEnumerable<AccountViewModel>>(userProfiles);
 
-        return accountsDetailsViewModel;
+        var pagedViewModel = new PagedResult<AccountViewModel>()
+        {
+            Items = accountsDetailsViewModel,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            Search = search
+        };
+
+        return pagedViewModel;
     }
 
     public async Task<EditAccountViewModel> GetEditAccountViewModelByIdAsync(Guid id)
