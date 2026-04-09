@@ -8,6 +8,7 @@ using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Shared;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -300,20 +301,36 @@ public class AccountService : IAccountService
         return departmentsHierarchy;
     }
 
-    public async Task<IEnumerable<AccountViewModel>> GetAllAccountViewModelAsync(Guid? companyId = null)
+    public async Task<IEnumerable<AccountViewModel>> GetAllAccountViewModelAsync(Guid? companyId = null, string? search = null)
     {
-        IEnumerable<UserProfile> userProfiles;
-        if (companyId is null)
-            userProfiles = await _userProfileRepository.GetAllAsync(q => 
-                                        q.Include(c => c.JobTitle)
-                                        .ThenInclude(j => j.Department)
-                                        .ThenInclude(d=>d.Company));
-        else
-            userProfiles = await _userProfileRepository.GetAllAsync(q =>
-                            q.Where(u => u.CompanyId == companyId).Include(c => c.JobTitle)
-                                        .ThenInclude(j => j.Department)
-                                        .ThenInclude(d => d.Company));
 
+        Func<IQueryable<UserProfile>, IQueryable<UserProfile>> query = q =>
+        {
+            q = q
+                .Include(u => u.JobTitle)
+                .ThenInclude(j => j.Department)
+                .ThenInclude(d => d.Company);
+
+            if (companyId.HasValue)
+            {
+                q = q.Where(u => u.CompanyId == companyId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.ToLower();
+                q = q.Where(u =>
+                    EF.Functions.Like(u.FullName.ToLower(), $"%{search}%") ||
+                    EF.Functions.Like(u.DocumentNumber.ToLower(), $"%{search}%") ||
+                    EF.Functions.Like(u.Company.TradeName.ToLower(), $"%{search}%") ||
+                    EF.Functions.Like(u.JobTitle.Name.ToLower(), $"%{search}%") ||
+                    EF.Functions.Like(u.Role.ToLower(), $"%{search}%")
+                );
+            }
+            return q;
+        };
+
+        IEnumerable<UserProfile> userProfiles = await _userProfileRepository.GetAllAsync(query);
         var accountsDetailsViewModel = _mapper.Map<IEnumerable<AccountViewModel>>(userProfiles);
 
         return accountsDetailsViewModel;

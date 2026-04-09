@@ -5,15 +5,25 @@
     ViewData["Title"] = "Usuarios";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="mb-3">
-        <a class="btn btn-sm btn-table" href="/Account/Register">Registrar Usuario</a>
+<form method="get" class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-sm btn-table" href="/Account/Register">
+            Registrar Usuário
+        </a>
     </div>
-    <input type="text"
-           id="searchInput"
-           placeholder="Pesquisar"
-           onkeyup="filterTable()" />
-</div>
+
+    <div class="input-group w-25">
+        <input type="text"
+               name="search"
+               value="@Context.Request.Query["search"]"
+               class="form-control"
+               placeholder="Pesquisar" />
+
+        <button class="btn btn-sm btn-outline-secondary" type="submit">
+            🔍
+        </button>
+    </div>
+</form>
 
 <table id="table" class="table table-hover">
     <thead class="table-light">
@@ -143,25 +153,4 @@
             }
         });
     });
-    
-    function filterTable() {
-        var input = document.getElementById("searchInput");
-        var filter = input.value.toLowerCase();
-        var table = document.getElementById("table");
-        var trs = table.getElementsByTagName("tr");
-
-        for (var i = 1; i < trs.length; i++) { // começa em 1 para pular o thead
-            var tds = trs[i].getElementsByTagName("td");
-            var show = false;
-
-            for (var j = 0; j < tds.length; j++) {
-                if (tds[j].innerText.toLowerCase().includes(filter)) {
-                    show = true;
-                    break;
-                }
-            }
-
-            trs[i].style.display = show ? "" : "none";
-        }
-    }
 </script>

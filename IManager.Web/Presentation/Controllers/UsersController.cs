@@ -15,15 +15,15 @@ namespace IManager.Web.Presentation.Controllers
         }
 
         // GET: Users
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery] string search)
         {
             IEnumerable<AccountViewModel> model;
             if (User.IsInRole(Role.Staff))
-                model = await _accountService.GetAllAccountViewModelAsync();
+                model = await _accountService.GetAllAccountViewModelAsync(search: search);
             else
             {
                 var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-                model = await _accountService.GetAllAccountViewModelAsync(companyId);
+                model = await _accountService.GetAllAccountViewModelAsync(companyId, search);
             }
 
             return View(model);
