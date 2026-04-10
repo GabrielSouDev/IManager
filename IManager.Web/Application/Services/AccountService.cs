@@ -375,7 +375,7 @@ public class AccountService : IAccountService
     public async Task<User?> GetByIdAsync(string userId)
     => await _userManager.FindByIdAsync(userId);
 
-    public async Task<PagedResult<AccountViewModel>> GetAllAccountViewModelAsync( 
+    public async Task<PagedResult<AccountViewModel>> GetPagedAsync( 
             int page, int pageSize, Guid? companyId = null, string? search = null)
     {
         Func<IQueryable<UserProfile>, IQueryable<UserProfile>> query = q =>

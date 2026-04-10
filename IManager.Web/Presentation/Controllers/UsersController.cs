@@ -21,11 +21,11 @@ namespace IManager.Web.Presentation.Controllers
         {
             PagedResult<AccountViewModel> model;
             if (User.IsInRole(Role.Staff))
-                model = await _accountService.GetAllAccountViewModelAsync(page, pageSize, search: search);
+                model = await _accountService.GetPagedAsync(page, pageSize, search: search);
             else
             {
                 var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-                model = await _accountService.GetAllAccountViewModelAsync(page, pageSize, companyId, search);
+                model = await _accountService.GetPagedAsync(page, pageSize, companyId, search);
             }
 
             return View(model);
