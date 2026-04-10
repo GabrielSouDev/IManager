@@ -10,6 +10,6 @@ public class AccountDetailsViewModel
     public DateOnly BirthDate { get; set; }
     public string? PhoneNumber { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public string JobTitle { get; set; }
+    public string JobTitle { get; set; } = string.Empty;
     public decimal BaseSalary { get; set; } = 0m;
 }

@@ -5,7 +5,7 @@
 @{
     ViewData["Title"] = "Criar Setor";
 
-    var companies = ViewBag.Companies as IEnumerable<CompanyViewModel>;
+    var companies = ViewBag.Companies as IEnumerable<CompanyViewModel> ?? new List<CompanyViewModel>();
 }
 
 <h4>Criar Setor</h4>
@@ -28,11 +28,13 @@
                     <select id="companySelect" asp-for="CompanyId" class="form-control">
                         <option value="">Selecione a empresa</option>
 
-                        @foreach (var company in companies)
+                        @if(companies.Any())
                         {
-                            <option value="@company.Id">@company.TradeName - @company.DocumentNumber</option>
+                            @foreach (var company in companies)
+                            {
+                                <option value="@company.Id">@company.TradeName - @company.DocumentNumber</option>
+                            }
                         }
-
                     </select>
                 </div>
                 }
