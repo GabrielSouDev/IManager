@@ -5,18 +5,10 @@ using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Entities.Payrolls;
 using IManager.Web.Domain.Entities.TimeTrackings;
 using IManager.Web.Domain.Entities.Users;
-using IManager.Web.Domain.Interfaces.Persistence;
-using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.Configurations;
-using IManager.Web.Presentation.ViewModels.Account;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
 
 namespace IManager.Web.Data.Persistence;
 
@@ -71,6 +63,11 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             .HasForeignKey<UserProfile>(p => p.Id)
             .IsRequired();
 
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.NormalizedEmail)
+            .IsUnique();
+
         // Company
         modelBuilder.Entity<Company>(entity =>
         {
@@ -94,6 +91,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
                   .WithOne(e => e.Company)
                   .HasForeignKey(e => e.CompanyId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.DocumentNumber)
+                  .IsUnique();
         });
 
         // Department
@@ -129,6 +129,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             entity.Property(e => e.DocumentNumber).IsRequired().HasMaxLength(14);
             entity.Property(e => e.BirthDate).IsRequired();
             entity.Property(e => e.BaseSalary).HasColumnType("decimal(18,2)");
+
+            entity.HasIndex(e => e.DocumentNumber)
+                  .IsUnique();
 
             entity.HasMany(e => e.TimeEntries)
                   .WithOne(e => e.Employee)
