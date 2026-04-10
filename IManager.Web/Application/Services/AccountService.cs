@@ -5,10 +5,7 @@ using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Account;
-using IManager.Web.Presentation.ViewModels.Companies;
-using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Shared;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -44,10 +41,6 @@ public class AccountService : IAccountService
         _departmentRepository = departmentRepository;
         _jobTitleRepository = jobTitleRepository;
     }
-
-
-
-
 
     #region Registro e Confirmação de E-mail
 
@@ -103,7 +96,7 @@ public class AccountService : IAccountService
 
     public async Task<Result> ConfirmEmailAsync(Guid userId, string token)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await GetByIdAsync(userId.ToString());
         if (user == null)
             return Result.Fail("Usuário não encontrado.");
 
@@ -218,7 +211,7 @@ public class AccountService : IAccountService
 
         try
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await GetByIdAsync(id.ToString());
             if (user is null)
                 return Result.Fail("Usuário não encontrado.");
 
@@ -307,7 +300,7 @@ public class AccountService : IAccountService
     #region Deleter User
     public async Task<Result> DeleteAsync(Guid id)
     {
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await GetByIdAsync(id.ToString());
         var userProfileExists = await _userProfileRepository.ExistsAsync(u => u.Id == id);
 
 
@@ -382,30 +375,6 @@ public class AccountService : IAccountService
     public async Task<User?> GetByIdAsync(string userId)
     => await _userManager.FindByIdAsync(userId);
 
-    public async Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync()
-    {
-        var companies = await _companyRepository.GetAllAsync(q => q.Include(c => c.Departments)
-                                                                   .ThenInclude(d => d.JobTitles));
-
-
-        var companiesHierarchy = _mapper.Map<IEnumerable<CompanyHierarchyViewModel>>(companies);
-        return companiesHierarchy;
-    }
-
-    public async Task<IEnumerable<DepartmentHierarchyViewModel>> GetDepartmentsHierarchyViewModelAsync(Guid? companyId = null)
-    {
-        IEnumerable<Department> departments;
-        if (companyId is null)
-            departments = await _departmentRepository.GetAllAsync(q => q.Include(d => d.JobTitles));
-        else
-            departments = await _departmentRepository.GetAllAsync(q => 
-                                        q.Where(d => d.CompanyId == companyId)
-                                        .Include(d => d.JobTitles));
-
-        var departmentsHierarchy = _mapper.Map<IEnumerable<DepartmentHierarchyViewModel>>(departments);
-        return departmentsHierarchy;
-    }
-
     public async Task<PagedResult<AccountViewModel>> GetAllAccountViewModelAsync( 
             int page, int pageSize, Guid? companyId = null, string? search = null)
     {
@@ -461,7 +430,7 @@ public class AccountService : IAccountService
 
         var editAccountCiewModel = _mapper.Map<EditAccountViewModel>(userProfile);
 
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await GetByIdAsync(id.ToString());
 
         editAccountCiewModel.Email = user!.Email!;
         editAccountCiewModel.PhoneNumber = user!.PhoneNumber!;

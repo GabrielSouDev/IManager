@@ -26,8 +26,6 @@ public interface IAccountService
     Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByEmailAsync(string email);
     Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model);
     Task<Result> ChangePasswordAsync(string email, ChangePasswordViewModel model);
-    Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync();
-    Task<IEnumerable<DepartmentHierarchyViewModel>> GetDepartmentsHierarchyViewModelAsync(Guid? companyId = null);
     Task<PagedResult<AccountViewModel>> GetAllAccountViewModelAsync(int page, int pageSize, Guid? companyId = null, string? search = null);
     Task<EditAccountViewModel> GetEditAccountViewModelByIdAsync(Guid id);
     Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model);

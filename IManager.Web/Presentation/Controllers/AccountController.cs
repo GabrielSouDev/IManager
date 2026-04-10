@@ -11,10 +11,14 @@ namespace IManager.Web.Presentation.Controllers;
 public class AccountController : Controller
 {
     private readonly IAccountService _accountService;
+    private readonly ICompanyService _companyService;
+    private readonly IDepartmentService _departmentService;
 
-    public AccountController(IAccountService accountService)
+    public AccountController(IAccountService accountService, ICompanyService companyService, IDepartmentService departmentService)
     {
         _accountService = accountService;
+        _companyService = companyService;
+        _departmentService = departmentService;
     }
 
     #region Registro e Confirmação de E-mail
@@ -25,11 +29,11 @@ public class AccountController : Controller
     {
         var model = new RegisterViewModel();
         if (User.IsInRole(Role.Staff))
-            ViewBag.Companies = await _accountService.GetCompaniesHierarchyViewModelAsync();
+            ViewBag.Companies = await _companyService.GetCompaniesHierarchyViewModelAsync();
         else
         {
             var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(companyId);
+            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(companyId);
 
             model.CompanyId = companyId;
         }

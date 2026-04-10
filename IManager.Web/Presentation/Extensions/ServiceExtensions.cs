@@ -10,6 +10,9 @@ public static class ServiceExtensions
     public static void AddServices(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IAccountService, AccountService>();
+        builder.Services.AddScoped<ICompanyService, CompanyService>();
+        builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddScoped<IEmailSender<User>, IdentityEmailSender>();
     }

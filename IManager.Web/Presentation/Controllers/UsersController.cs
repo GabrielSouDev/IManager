@@ -8,10 +8,12 @@ namespace IManager.Web.Presentation.Controllers
     public class UsersController : Controller
     {
         private readonly IAccountService _accountService;
+        private readonly IDepartmentService _departmentService;
 
-        public UsersController(IAccountService accountService)
+        public UsersController(IAccountService accountService, IDepartmentService departmentService)
         {
             _accountService = accountService;
+            _departmentService = departmentService;
         }
 
         // GET: Users
@@ -55,7 +57,7 @@ namespace IManager.Web.Presentation.Controllers
 
             if (model == null) return NotFound();
 
-            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
             return View(model);
         }
 
@@ -71,7 +73,7 @@ namespace IManager.Web.Presentation.Controllers
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+                ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
                 return View(model);
             }
 
@@ -87,7 +89,7 @@ namespace IManager.Web.Presentation.Controllers
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error);
 
-                            ViewBag.Departments = await _accountService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+                            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
             return View(model);
         }
 

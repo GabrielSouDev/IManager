@@ -177,8 +177,10 @@ public class TimeCheckApiController : ControllerBase
     public async Task<IActionResult> UpdateTimeEntry(TimeEntryDTO request, Guid id)
     {
         var original = await _timeEntryRepository.GetByIdAsync(id);
+        if (original is null)
+            return NotFound("TimeEntry não encontrado.");
 
-        if (!ModelState.IsValid && original == null && original.Id != request.Id)
+        if (!ModelState.IsValid && original == null && original!.Id != request.Id)
         {
             return BadRequest("TimeCheckRequest invalido.");
         }
