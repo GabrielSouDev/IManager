@@ -8,6 +8,7 @@ using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Security.Claims;
 using UserProfile = IManager.Web.Domain.Entities.Users.UserProfile;
 
@@ -250,23 +251,26 @@ public class AccountService : IAccountService
             }
 
             var currentRoles = await _userManager.GetRolesAsync(user);
+            var currentRole = currentRoles.FirstOrDefault();
+
             var newRole = model.Role.ToString();
 
             if (!currentRoles.Contains(newRole))
             {
 
-                if (currentRoles.Any())
+                if (!string.IsNullOrEmpty(currentRole) && currentRole != newRole)
                 {
                     var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
                     if (!removeResult.Succeeded)
                         return Result.Fail("Erro ao remover perfil anterior.");
                 }
 
-
                 var addResult = await _userManager.AddToRoleAsync(user, newRole);
                 if (!addResult.Succeeded)
                     return Result.Fail("Erro ao atribuir novo perfil ao usuário.");
 
+                userProfile.Role = newRole;
+                await _userProfileRepository.UpdateAsync(userProfile);
             }
 
             var jobTitle = await _jobTitleRepository.GetByIdAsync(
