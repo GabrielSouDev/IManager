@@ -1,6 +1,7 @@
 ﻿using IManager.Web.Application.Interfaces;
 using IManager.Web.Domain.Consts;
 using IManager.Web.Presentation.ViewModels.Companies;
+using IManager.Web.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,27 +42,34 @@ public class CompaniesController : Controller
         return View(model);
     }
 
-    //// GET: Companies/Create
-    //public IActionResult Create()
-    //{
-    //    return View();
-    //}
+    // GET: Companies/Create
+    public IActionResult Create()
+    {
+        return View();
+    }
 
-    //// POST: Companies/Create
-    //// To protect from overposting attacks, enable the specific properties you want to bind to.
-    //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Create(CreateCompanyViewModel company)
-    //{
-    //    if (ModelState.IsValid)
-    //    {
-    //        var entity = _mapper.Map<Company>(company);
-    //        await _companyRepository.AddAsync(entity);
-    //        return RedirectToAction(nameof(Index));
-    //    }
-    //    return View(company);
-    //}
+    // POST: Companies/Create
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateCompanyViewModel company)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(company);
+        }
+
+        Result result = await _companyService.AddAsync(company);
+
+        if (!result.Succeeded){
+            TempData[ToastMessages.Error] = $"Erro em criar Empresa: {string.Join(", ",result.Errors)}";
+            return View(company);
+        }
+
+        TempData[ToastMessages.Success] = "Empresa criada com sucesso!";
+        return RedirectToAction(nameof(Index));
+    }
 
     //// GET: Companies/Edit/5
     //public async Task<IActionResult> Edit(Guid? id)

@@ -7,6 +7,7 @@ using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Companies;
+using IManager.Web.Shared;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
 
@@ -24,6 +25,27 @@ public class CompanyService : ICompanyService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _companyRepository = companyRepository;
+    }
+
+    public async Task<Result> AddAsync(CreateCompanyViewModel company)
+    {
+        var exists = await _companyRepository.ExistsAsync(c=>c.DocumentNumber == company.DocumentNumber);
+
+        if (exists)
+            return Result.Fail("Empresa já esta cadastrada.");
+
+        try
+        {
+            var entity = _mapper.Map<Company>(company);
+            await _companyRepository.AddAsync(entity);
+        }
+        catch (Exception ex)
+        {
+
+            return Result.Fail(ex.Message);
+        }
+
+        return Result.Ok();
     }
 
     public async Task<CompanyViewModel> GetByIdAsync(Guid? id)
