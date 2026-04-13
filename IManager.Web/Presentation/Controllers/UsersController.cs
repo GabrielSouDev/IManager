@@ -120,12 +120,12 @@ namespace IManager.Web.Presentation.Controllers
             if (!result.Succeeded)
             {
                 TempData["Error"] = result.Errors.FirstOrDefault()
-                    ?? "Erro ao desativar usuário.";
+                    ?? "Erro ao atualizar informação de usuário.";
 
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = "Usuário desativado com sucesso!";
+            TempData["Success"] = "Usuário atualizado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
     }
