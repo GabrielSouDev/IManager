@@ -115,7 +115,7 @@ namespace IManager.Web.Presentation.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var result = await _accountService.DeleteAsync(id);
+            var result = await _accountService.SoftDeleteAsync(id);
 
             if (!result.Succeeded)
             {

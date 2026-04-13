@@ -253,29 +253,45 @@ public class AccountService : IAccountService
     #endregion
 
     #region Deleter User
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result> SoftDeleteAsync(Guid id)
     {
         var user = await GetByIdAsync(id.ToString());
-        var userProfileExists = await _userProfileRepository.ExistsAsync(u => u.Id == id);
+        var userProfile = await _userProfileRepository.GetByIdAsync(id);
 
-
-        if (user is null || !userProfileExists)
+        if (user is null || userProfile is null)
             return Result.Fail("Usuario não encontrado.");
 
         await _unitOfWork.BeginTransactionAsync();
         try
         {
-            await _userProfileRepository.DeleteAsync(id);
+            var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
 
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            if (!isLocked)
+            {
+                userProfile.IsActive = false;
+                userProfile.DeletedAt = DateTime.UtcNow;
+
+                await _userProfileRepository.UpdateAsync(userProfile);
+
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            }
+            else
+            {
+                userProfile.IsActive = true;
+                userProfile.DeletedAt = null;
+
+                await _userProfileRepository.UpdateAsync(userProfile);
+
+                await _userManager.SetLockoutEndDateAsync(user, null);
+            }
 
             await _unitOfWork.CommitAsync();
         }
         catch (Exception)
         {
             await _unitOfWork.RollbackAsync();
-            return Result.Fail("Falha ao desativar usuario, porfavor tente novamente.");
+            return Result.Fail("Falha ao atualizar usuario, por favor tente novamente.");
         }
         return Result.Ok();
     }

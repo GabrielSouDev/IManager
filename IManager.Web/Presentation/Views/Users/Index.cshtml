@@ -52,7 +52,7 @@
     <tbody>
         @foreach (var item in Model.Items)
         {
-            <tr data-id="@item.Id">
+            <tr data-id="@item.Id" data-active="@item.IsActive">
                 <td class="truncate">@item.FullName</td>
                 <td>@(MaskHelper.MaskCpf(item.DocumentNumber))</td>
                 <td>@item.BirthDate.ToString("dd/MM/yyyy")</td>
@@ -156,6 +156,7 @@
 
 <script>
     let selectedId = null;
+    let selectedActive = null;
 
     document.addEventListener("DOMContentLoaded", function() {
         const table = document.getElementById("table");
@@ -168,6 +169,8 @@
         function clearSelection() {
             rows.forEach(r => r.classList.remove("selected"));
             selectedId = null;
+            selectedActive = null;
+            btnDelete.textContent = "Desativar";
 
             btnEdit.disabled = true;
             btnDetails.disabled = true;
@@ -187,10 +190,13 @@
 
                 this.classList.add("selected");
                 selectedId = this.dataset.id;
+                selectedActive = this.dataset.active === "True";
 
                 btnEdit.disabled = false;
                 btnDetails.disabled = false;
                 btnDelete.disabled = false;
+
+                btnDelete.textContent = selectedActive ? "Desativar" : "Ativar";
             });
         });
 

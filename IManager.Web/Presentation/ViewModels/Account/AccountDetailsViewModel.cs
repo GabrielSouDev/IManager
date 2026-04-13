@@ -12,4 +12,5 @@ public class AccountDetailsViewModel
     public string Role { get; set; } = string.Empty;
     public string JobTitle { get; set; } = string.Empty;
     public decimal BaseSalary { get; set; } = 0m;
+    public bool IsActive { get; set; }
 }
