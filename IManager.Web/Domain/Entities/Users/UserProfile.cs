@@ -10,8 +10,6 @@ public class UserProfile : BaseEntity
     public string FullName { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
     public DateOnly BirthDate { get; set; }
-    public bool IsActive { get; set; } = true;
-    public DateTime? DeletedAt { get; set; }
     public string Role { get; set; } = string.Empty;
 
     public Guid CompanyId { get; set; }
@@ -24,11 +22,4 @@ public class UserProfile : BaseEntity
 
     public ICollection<TimeEntry> TimeEntries { get; set; } = new List<TimeEntry>();
     public ICollection<Payslip> Payslips { get; set; } = new List<Payslip>();
-
-
-    public void Deactivate()
-    {
-        IsActive = false;
-        DeletedAt = DateTime.UtcNow;
-    }
 }

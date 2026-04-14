@@ -123,7 +123,7 @@ namespace IManager.Web.Presentation.Controllers
         {
             var timeCheck = await _timeCheckRepository.GetByIdAsync(id);
             if (timeCheck != null)
-                await _timeCheckRepository.DeleteAsync(timeCheck);
+                await _timeCheckRepository.SoftDeleteAsync(timeCheck);
 
             return RedirectToAction(nameof(Index));
         }

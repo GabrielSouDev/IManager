@@ -161,7 +161,7 @@ namespace IManager.Web.Presentation.Controllers
             var department = await _departmentRepository.GetByIdAsync(id);
             if (department != null)
             {
-               await _departmentRepository.DeleteAsync(department);
+               await _departmentRepository.SoftDeleteAsync(department);
             }
 
             return RedirectToAction(nameof(Index));

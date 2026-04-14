@@ -23,14 +23,14 @@ public class AccountService : IAccountService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailSender<User> _emailSender;
     private readonly IMapper _mapper;
-    private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IRepository<UserProfile> _userProfileRepository;
     private readonly IRepository<Company> _companyRepository;
     private readonly IRepository<Department> _departmentRepository;
     private readonly IRepository<JobTitle> _jobTitleRepository;
 
     public AccountService(SignInManager<User> signInManager, UserManager<User> userManager, 
         IUnitOfWork unitOfWork, IEmailSender<User> emailSender, IMapper mapper, 
-        IUserProfileRepository userProfileRepository, IRepository<Company> companyRepository, 
+        IRepository<UserProfile> userProfileRepository, IRepository<Company> companyRepository, 
         IRepository<Department> departmentRepository, IRepository<JobTitle> jobTitleRepository)
     {
         _signInManager = signInManager;
@@ -268,20 +268,14 @@ public class AccountService : IAccountService
 
             if (!isLocked)
             {
-                userProfile.IsActive = false;
-                userProfile.DeletedAt = DateTime.UtcNow;
-
-                await _userProfileRepository.UpdateAsync(userProfile);
+                await _userProfileRepository.SoftDeleteAsync(userProfile.Id);
 
                 await _userManager.SetLockoutEnabledAsync(user, true);
                 await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
             }
             else
             {
-                userProfile.IsActive = true;
-                userProfile.DeletedAt = null;
-
-                await _userProfileRepository.UpdateAsync(userProfile);
+                await _userProfileRepository.SoftDeleteAsync(userProfile.Id);
 
                 await _userManager.SetLockoutEndDateAsync(user, null);
             }
@@ -347,7 +341,7 @@ public class AccountService : IAccountService
     => await _userManager.FindByIdAsync(userId);
 
     public async Task<PagedResult<AccountViewModel>> GetPagedAsync( 
-            int page, int pageSize, Guid? companyId = null, string? search = null)
+            int page, int pageSize, ActiveFilter active, Guid ? companyId = null, string? search = null)
     {
         Func<IQueryable<UserProfile>, IQueryable<UserProfile>> query = q =>
         {
@@ -359,6 +353,18 @@ public class AccountService : IAccountService
             if (companyId.HasValue)
             {
                 q = q.Where(u => u.CompanyId == companyId);
+            }
+
+            switch(active)
+            {
+                case ActiveFilter.Active:
+                    q = q.Where(u => u.IsActive);
+                    break;
+                case ActiveFilter.Inactive:
+                    q = q.Where(u => !u.IsActive);
+                    break;
+                default:
+                    break;
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -386,7 +392,8 @@ public class AccountService : IAccountService
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
-            Search = search
+            Search = search,
+            ActiveFilter = active
         };
 
         return pagedViewModel;

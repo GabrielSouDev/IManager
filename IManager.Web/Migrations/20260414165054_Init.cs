@@ -61,7 +61,9 @@ namespace IManager.Web.Migrations
                     TradeName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     FoundedAt = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -182,7 +184,9 @@ namespace IManager.Web.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -204,7 +208,9 @@ namespace IManager.Web.Migrations
                     PeriodStart = table.Column<DateOnly>(type: "date", nullable: false),
                     PeriodEnd = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -229,7 +235,9 @@ namespace IManager.Web.Migrations
                     IsCommissioned = table.Column<bool>(type: "boolean", nullable: false),
                     DailyHours = table.Column<TimeSpan>(type: "interval", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -250,14 +258,14 @@ namespace IManager.Web.Migrations
                     FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     DocumentNumber = table.Column<string>(type: "character varying(14)", maxLength: 14, nullable: false),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Role = table.Column<string>(type: "text", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     JobTitleId = table.Column<Guid>(type: "uuid", nullable: false),
                     BaseSalary = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -298,7 +306,9 @@ namespace IManager.Web.Migrations
                     IRRFDeduction = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     OtherDeductions = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -330,7 +340,9 @@ namespace IManager.Web.Migrations
                     AdjustmentReason = table.Column<string>(type: "text", nullable: true),
                     RejectionReason = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -351,7 +363,9 @@ namespace IManager.Web.Migrations
                     TimeEntryId = table.Column<Guid>(type: "uuid", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -393,12 +407,19 @@ namespace IManager.Web.Migrations
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
                 table: "AspNetUsers",
-                column: "NormalizedEmail");
+                column: "NormalizedEmail",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Companies_DocumentNumber",
+                table: "Companies",
+                column: "DocumentNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -440,6 +461,12 @@ namespace IManager.Web.Migrations
                 name: "IX_UserProfiles_CompanyId",
                 table: "UserProfiles",
                 column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserProfiles_DocumentNumber",
+                table: "UserProfiles",
+                column: "DocumentNumber",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserProfiles_JobTitleId",

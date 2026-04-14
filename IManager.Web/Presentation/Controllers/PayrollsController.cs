@@ -123,7 +123,7 @@ namespace IManager.Web.Presentation.Controllers
             var payroll = await _payrollRepository.GetByIdAsync(id);
             if (payroll != null)
             {
-                await _payrollRepository.DeleteAsync(payroll);
+                await _payrollRepository.SoftDeleteAsync(payroll);
             }
 
             return RedirectToAction(nameof(Index));

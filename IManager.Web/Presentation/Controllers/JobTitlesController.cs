@@ -123,7 +123,7 @@ namespace IManager.Web.Presentation.Controllers
         {
             var jobTitle = await _JobTitleRepository.GetByIdAsync(id);
             if (jobTitle != null)
-                await _JobTitleRepository.DeleteAsync(jobTitle);
+                await _JobTitleRepository.SoftDeleteAsync(jobTitle);
             
             return RedirectToAction(nameof(Index));
         }

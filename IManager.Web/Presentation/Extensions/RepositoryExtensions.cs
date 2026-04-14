@@ -8,7 +8,5 @@ public static class RepositoryExtensions
     public static void AddRepositories(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
     }
 }

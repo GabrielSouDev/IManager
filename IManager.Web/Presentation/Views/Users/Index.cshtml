@@ -13,6 +13,12 @@
     </div>
 
     <div class="input-group w-25">
+        <select name="active" asp-for="ActiveFilter" class="form-select" onchange="this.form.submit()">
+            <option value="@ActiveFilter.All">Todos</option>
+            <option value="@ActiveFilter.Active">Ativos</option>
+            <option value="@ActiveFilter.Inactive">Inativos</option>
+        </select>
+
         <input type="text"
                name="search"
                value="@Model.Search"
@@ -70,7 +76,6 @@
                 <td>@item.JobTitle.Department.Name</td>
                 <td>@item.JobTitle.Name</td>
                 <td>@item.Role</td>
-
                 <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
             </tr>
         }
@@ -114,8 +119,8 @@
         </small>
         <div class="d-flex align-items-center gap-3">
             <form method="get" class="m-0 p-0">
-
                 <input type="hidden" name="search" value="@Model.Search" />
+                <input type="hidden" name="active" value="@Model.ActiveFilter" />
 
                 <select name="pageSize"
                         class="form-select w-auto"
@@ -129,12 +134,13 @@
                 </select>
             </form>
 
-            @{
+                @{
                 var totalPages = (int)Math.Ceiling(
                     (double)Model.TotalCount / Model.PageSize
                 );
 
                 var search = Model.Search?.ToString();
+                var active = Model.ActiveFilter;
             }
             <nav class="m-0 p-0">
                 <ul class="pagination pagination-sm mb-0">
@@ -145,7 +151,8 @@
                                asp-action="Index"
                                asp-route-page="@i"
                                asp-route-pageSize="@pageSize"
-                               asp-route-search="@search">@i</a>
+                               asp-route-search="@search"
+                               asp-route-active="@active">@i</a>
                         </li>
                     }
                 </ul>

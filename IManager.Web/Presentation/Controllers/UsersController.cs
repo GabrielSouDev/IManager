@@ -17,15 +17,15 @@ namespace IManager.Web.Presentation.Controllers
         }
 
         // GET: Users
-        public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] ActiveFilter active = ActiveFilter.Active, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             PagedResult<AccountViewModel> model;
             if (User.IsInRole(Role.Staff))
-                model = await _accountService.GetPagedAsync(page, pageSize, search: search);
+                model = await _accountService.GetPagedAsync(page, pageSize, active, search: search);
             else
             {
                 var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-                model = await _accountService.GetPagedAsync(page, pageSize, companyId, search);
+                model = await _accountService.GetPagedAsync(page, pageSize, active, companyId, search);
             }
 
             return View(model);

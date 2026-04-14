@@ -48,11 +48,23 @@ public class CompanyService : ICompanyService
         return Result.Ok();
     }
 
-    public async Task<CompanyViewModel> GetByIdAsync(Guid? id)
+    public async Task<Result> SoftDeleteAsync(Guid id)
     {
-        var company = await _companyRepository.GetByIdAsync(id!.Value);
+        if (id == Guid.Empty) return Result.Fail("Empresa não localizada.");
 
-        return _mapper.Map<CompanyViewModel>(company);
+        var exists = await _companyRepository.ExistsAsync(c => c.Id == id);
+
+        if(!exists) return Result.Fail("Empresa não localizada.");
+
+        try
+        {
+            await _companyRepository.SoftDeleteAsync(id);
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail("Falha ao desativar empresa.");
+        }
     }
 
     public async Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync()
@@ -64,7 +76,16 @@ public class CompanyService : ICompanyService
         return companiesHierarchy;
     }
 
-    public async Task<PagedResult<CompanyViewModel>> GetPagedAsync(int page, int pageSize, string search)
+    public async Task<EditCompanyViewModel?> GetEditViewModelByIdAsync(Guid id)
+    {
+        var entity = await _companyRepository.GetByIdAsync(id);
+        if (entity == null) return null;
+
+        var model = _mapper.Map<EditCompanyViewModel>(entity);
+        return model;
+    }
+
+    public async Task<PagedResult<CompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize)
     {
         Func<IQueryable<Company>, IQueryable<Company>> query = q =>
         {
@@ -77,6 +98,19 @@ public class CompanyService : ICompanyService
                     EF.Functions.Like(u.TradeName.ToLower(), $"%{search}%")
                 );
             }
+
+            switch (active)
+            {
+                case ActiveFilter.Active:
+                    q = q.Where(u => u.IsActive);
+                    break;
+                case ActiveFilter.Inactive:
+                    q = q.Where(u => !u.IsActive);
+                    break;
+                default:
+                    break;
+            }
+
             return q;
         };
 
@@ -95,5 +129,31 @@ public class CompanyService : ICompanyService
         };
 
         return pagedViewModel;
+    }
+
+    public async Task<CompanyViewModel> GetViewModelByIdAsync(Guid id)
+    {
+        var entity = await _companyRepository.GetByIdAsync(id);
+        if (entity == null) return null;
+
+        var model = _mapper.Map<CompanyViewModel>(entity);
+        return model;
+    }
+
+    public async Task<Result> UpdateAsync(Guid id,EditCompanyViewModel company)
+    {
+        try
+        {
+            var entity = await _companyRepository.GetByIdAsync(id);
+            if (entity is null && company.Id != id) Result.Fail("Empresa não encontrada.");
+
+            _mapper.Map(company, entity);
+            await _companyRepository.UpdateAsync(entity);
+            return Result.Ok();
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Erro ao atualizar empresa.");
+        }
     }
 }

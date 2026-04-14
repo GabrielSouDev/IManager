@@ -151,7 +151,7 @@ public class TimeCheckApiController : ControllerBase
         if (id == Guid.Empty || !exists)
             return NotFound();
 
-        await _timeEntryRepository.DeleteAsync(id);
+        await _timeEntryRepository.SoftDeleteAsync(id);
 
         return NoContent();
     }

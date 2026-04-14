@@ -122,7 +122,7 @@ namespace IManager.Web.Presentation.Controllers
         {
             var payslip = await _payslipRepository.GetByIdAsync(id);
             if (payslip != null) 
-                await _payslipRepository.DeleteAsync(payslip);
+                await _payslipRepository.SoftDeleteAsync(payslip);
 
             return RedirectToAction(nameof(Index));
         }
