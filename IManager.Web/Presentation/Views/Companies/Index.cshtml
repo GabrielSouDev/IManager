@@ -12,6 +12,12 @@
     </div>
 
     <div class="input-group w-25">
+        <select name="active" asp-for="ActiveFilter" class="form-select" onchange="this.form.submit()">
+            <option value="@ActiveFilter.All">Todos</option>
+            <option value="@ActiveFilter.Active">Ativos</option>
+            <option value="@ActiveFilter.Inactive">Inativos</option>
+        </select>
+
         <input type="text"
                name="search"
                value="@Model.Search"
@@ -32,18 +38,20 @@
             <th>Nome Fantasia</th>
             <th>Data de Fundação</th>
             <th>Data de Criação</th>
+            <th class="text-center">Ativo</th>
         </tr>
     </thead>
 
     <tbody>
         @foreach (var item in Model.Items)
         {
-            <tr data-id="@item.Id">
+            <tr data-id="@item.Id" data-active="@item.IsActive">
                 <td>@MaskHelper.MaskCnpj(item.DocumentNumber)</td>
                 <td class="truncate">@item.LegalName</td>
                 <td class="truncate">@item.TradeName</td>
                 <td>@item.FoundedAt.ToString("dd/MM/yyyy")</td>
                 <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
             </tr>
         }
     </tbody>
@@ -58,7 +66,7 @@
             Detalhes
         </button>
         <button id="btn-delete" class="btn btn-sm btn-danger" disabled>
-            Deletar
+            Desativar
         </button>
     </div>
 
@@ -89,6 +97,7 @@
         <div class="d-flex align-items-center gap-3">
             <form method="get" class="m-0 p-0">
                 <input type="hidden" name="search" value="@Model.Search" />
+                <input type="hidden" name="active" value="@Model.ActiveFilter" />
 
                 <select name="pageSize"
                         class="form-select w-auto"
@@ -108,6 +117,7 @@
                 );
 
                 var search = Model.Search?.ToString();
+                var active = Model.ActiveFilter;
             }
 
             <nav class="m-0 p-0">
@@ -119,7 +129,8 @@
                                asp-action="Index"
                                asp-route-page="@i"
                                asp-route-pageSize="@pageSize"
-                               asp-route-search="@search">@i</a>
+                               asp-route-search="@search"
+                               asp-route-active="@active">@i</a>
                         </li>
                     }
                 </ul>
@@ -130,6 +141,7 @@
 
 <script>
     let selectedId = null;
+    let selectedActive = null;
 
     document.addEventListener("DOMContentLoaded", function() {
         const table = document.getElementById("table");
@@ -142,6 +154,9 @@
         function clearSelection() {
             rows.forEach(r => r.classList.remove("selected"));
             selectedId = null;
+            selectedActive = null;
+
+            btnDelete.textContent = "Desativar";
 
             btnEdit.disabled = true;
             btnDetails.disabled = true;
@@ -161,10 +176,13 @@
 
                 this.classList.add("selected");
                 selectedId = this.dataset.id;
+                selectedActive = this.dataset.active === "True";
 
                 btnEdit.disabled = false;
                 btnDetails.disabled = false;
                 btnDelete.disabled = false;
+
+                btnDelete.textContent = selectedActive ? "Desativar" : "Ativar";
             });
         });
 

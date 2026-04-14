@@ -6,7 +6,10 @@ namespace IManager.Web.Application.Interfaces;
 public interface ICompanyService
 {
     Task<Result> AddAsync(CreateCompanyViewModel company);
-    Task<CompanyViewModel> GetByIdAsync(Guid? id);
+    Task<Result> SoftDeleteAsync(Guid id);
     Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync();
-    Task<PagedResult<CompanyViewModel>> GetPagedAsync(int page, int pageSize, string search);
+    Task<EditCompanyViewModel?> GetEditViewModelByIdAsync(Guid value);
+    Task<PagedResult<CompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize);
+    Task<CompanyViewModel> GetViewModelByIdAsync(Guid value);
+    Task<Result> UpdateAsync(Guid id, EditCompanyViewModel company);
 }

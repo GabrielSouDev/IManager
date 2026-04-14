@@ -35,15 +35,16 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
         return await query.CountAsync();
     }
-    public async Task DeleteAsync(Guid id)
+    public async Task SoftDeleteAsync(Guid id)
     {
         var entity = await GetByIdAsync(id);
         if (entity is not null)
-            await DeleteAsync(entity);
+            await SoftDeleteAsync(entity);
     }
-    public async Task DeleteAsync(T entity)
+    public async Task SoftDeleteAsync(T entity)
     {
-        _dbSet.Remove(entity);
+        entity.Deactivate();
+        _dbSet.Update(entity);
         await _context.SaveChangesAsync();
     }
     public async Task DeleteRangeAsync(IEnumerable<T> entities)

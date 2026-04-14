@@ -18,9 +18,9 @@ public class CompaniesController : Controller
     }
 
     // GET: Companies
-    public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] ActiveFilter active = ActiveFilter.Active, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var model = await _companyService.GetPagedAsync(page, pageSize, search: search);
+        var model = await _companyService.GetPagedAsync(search, active, page, pageSize);
 
         return View(model);
     }
@@ -33,7 +33,7 @@ public class CompaniesController : Controller
             return NotFound();
         }
 
-        CompanyViewModel model = await _companyService.GetByIdAsync(id);
+        CompanyViewModel model = await _companyService.GetViewModelByIdAsync(id.Value);
         if (model == null)
         {
             return NotFound();
@@ -49,8 +49,6 @@ public class CompaniesController : Controller
     }
 
     // POST: Companies/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateCompanyViewModel company)
@@ -71,90 +69,76 @@ public class CompaniesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    //// GET: Companies/Edit/5
-    //public async Task<IActionResult> Edit(Guid? id)
-    //{
-    //    if (id == null) return NotFound();
+    // GET: Companies/Edit/5
+    public async Task<IActionResult> Edit(Guid? id)
+    {
+        if (id == null) return NotFound();
 
-    //    var company = await _companyRepository.GetByIdAsync(id.Value);
+        var model = await _companyService.GetEditViewModelByIdAsync(id.Value);
+        if(model == null) return NotFound();
 
-    //    if (company == null) return NotFound();
+        return View(model);
+    }
 
-    //    var model = _mapper.Map<EditCompanyViewModel>(company);
-    //    return View(model);
-    //}
+    // POST: Companies/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, EditCompanyViewModel company)
+    {
+        if (id != company.Id) return NotFound();
 
-    //// POST: Companies/Edit/5
-    //// To protect from overposting attacks, enable the specific properties you want to bind to.
-    //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Edit(Guid id, EditCompanyViewModel company)
-    //{
-    //    if (id != company.Id) return NotFound();
+        if (!ModelState.IsValid)
+        {
+            return View(company);
+        }
+        
+        var result = await _companyService.UpdateAsync(id, company);
+        if (!result.Succeeded)
+        {
+            TempData[ToastMessages.Error] = $"Erro ao atualizar Empresa: {string.Join(", ", result.Errors)}";
+            return View(company);
+        }
 
-    //    if (ModelState.IsValid)
-    //    {
-    //        try
-    //        {
+        TempData[ToastMessages.Success] = "Empresa atualizada com sucesso!";
 
-    //            var entity = await _companyRepository.GetByIdAsync(id);
-    //            if (entity is null) return NotFound();
+        return RedirectToAction(nameof(Index));
+        
+    }
 
-    //            _mapper.Map(company, entity);
-    //            await _companyRepository.UpdateAsync(entity);
-    //        }
-    //        catch (DbUpdateConcurrencyException)
-    //        {
-    //            if (!await CompanyExists(company.Id))
-    //            {
-    //                return NotFound();
-    //            }
-    //            else
-    //            {
-    //                throw;
-    //            }
-    //        }
-    //        return RedirectToAction(nameof(Index));
-    //    }
-    //    return View(company);
-    //}
+    // GET: Companies/Delete/5
+    public async Task<IActionResult> Delete(Guid? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
 
-    //// GET: Companies/Delete/5
-    //public async Task<IActionResult> Delete(Guid? id)
-    //{
-    //    if (id == null)
-    //    {
-    //        return NotFound();
-    //    }
+        CompanyViewModel model = await _companyService.GetViewModelByIdAsync(id.Value);
+        if (model == null)
+        {
+            return NotFound();
+        }
 
-    //    var company = await _companyRepository
-    //        .FirstOrDefaultAsync(m => m.Id == id);
-    //    if (company == null)
-    //    {
-    //        return NotFound();
-    //    }
+        return View(model);
+    }
 
-    //    var model = _mapper.Map<CompanyViewModel>(company);
-    //    return View(model);
-    //}
+    // POST: Companies/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    {
+        if (id == Guid.Empty)
+        {
+            return NotFound();
+        }
+        Result result = await _companyService.SoftDeleteAsync(id);
+        if(!result.Succeeded)
+        {
+            TempData[ToastMessages.Error] = $"Erro ao desativar empresa: {string.Join(", ", result.Errors)}";
+            return NotFound();
+        }
 
-    //// POST: Companies/Delete/5
-    //[HttpPost, ActionName("Delete")]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> DeleteConfirmed(Guid id)
-    //{
-    //    var company = await _companyRepository.GetByIdAsync(id);
-    //    if (company != null)
-    //    {
-    //        await _companyRepository.DeleteAsync(company);
-    //    }
-
-    //    return RedirectToAction(nameof(Index));
-    //}
-
-    //private async Task<bool> CompanyExists(Guid id)
-    //{
-    //    return await _companyRepository.ExistsAsync(e => e.Id == id);
-    //}
+        TempData[ToastMessages.Success] = "Empresa atualizada com sucesso!";
+        return RedirectToAction(nameof(Index));
+    }
 }

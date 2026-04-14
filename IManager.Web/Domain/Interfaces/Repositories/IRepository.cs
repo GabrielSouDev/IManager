@@ -20,8 +20,8 @@ public interface IRepository<T> where T : class
     Task AddAsync(T entity);
     Task AddRangeAsync(IEnumerable<T> entities);
     Task UpdateAsync(T entity);
-    Task DeleteAsync(Guid id);
-    Task DeleteAsync(T entity);
+    Task SoftDeleteAsync(Guid id);
+    Task SoftDeleteAsync(T entity);
     Task DeleteRangeAsync(IEnumerable<T> entities);
     // UTILS
     Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);

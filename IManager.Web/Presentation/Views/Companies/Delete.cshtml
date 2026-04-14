@@ -4,9 +4,9 @@
     ViewData["Title"] = "Deletar Empresa";
 }
 
-<h4>Deletar Empresa</h4>
+<h1>@(Model.IsActive ? "Desativar" : "Ativar")</h1>
 
-<h5>Você tem certeza que deseja deletar esta empresa?</h5>
+<h3>Você tem certeza que deseja @(Model.IsActive ? "Desativar" : "Ativar") este empresa?</h3>
 <div>
     <hr />
     <dl class="row">
@@ -44,7 +44,7 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Deletar" class="btn btn-danger" /> |
+        <input type="submit" value="@(Model.IsActive ? "Desativar" : "Ativar")" class="btn btn-danger" /> |
         <a asp-action="Index">Voltar</a>
     </form>
 </div>
