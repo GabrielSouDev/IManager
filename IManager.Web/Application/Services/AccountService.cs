@@ -8,8 +8,6 @@ using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using UserProfile = IManager.Web.Domain.Entities.Users.UserProfile;
 
@@ -24,14 +22,11 @@ public class AccountService : IAccountService
     private readonly IEmailSender<User> _emailSender;
     private readonly IMapper _mapper;
     private readonly IRepository<UserProfile> _userProfileRepository;
-    private readonly IRepository<Company> _companyRepository;
-    private readonly IRepository<Department> _departmentRepository;
     private readonly IRepository<JobTitle> _jobTitleRepository;
 
     public AccountService(SignInManager<User> signInManager, UserManager<User> userManager, 
         IUnitOfWork unitOfWork, IEmailSender<User> emailSender, IMapper mapper, 
-        IRepository<UserProfile> userProfileRepository, IRepository<Company> companyRepository, 
-        IRepository<Department> departmentRepository, IRepository<JobTitle> jobTitleRepository)
+        IRepository<UserProfile> userProfileRepository, IRepository<JobTitle> jobTitleRepository)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -39,8 +34,6 @@ public class AccountService : IAccountService
         _emailSender = emailSender;
         _mapper = mapper;
         _userProfileRepository = userProfileRepository;
-        _companyRepository = companyRepository;
-        _departmentRepository = departmentRepository;
         _jobTitleRepository = jobTitleRepository;
     }
 
@@ -252,7 +245,7 @@ public class AccountService : IAccountService
     }
     #endregion
 
-    #region Deleter User
+    #region Deletar User
     public async Task<Result> SoftDeleteAsync(Guid id)
     {
         var user = await GetByIdAsync(id.ToString());
