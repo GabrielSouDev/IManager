@@ -7,6 +7,7 @@ using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
+using IManager.Web.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,9 @@ namespace IManager.Web.Presentation.Controllers
         public readonly ICompanyService _companyService;
         public readonly IDepartmentService _departmentService;
 
-        public DepartmentsController(IDepartmentService departmentService)
+        public DepartmentsController(ICompanyService companyService, IDepartmentService departmentService)
         {
+            _companyService = companyService;
             _departmentService = departmentService;
         }
 
@@ -40,58 +42,70 @@ namespace IManager.Web.Presentation.Controllers
             return View(model);
         }
 
-        //// GET: Departments/Details/5
-        //public async Task<IActionResult> Details(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // GET: Departments/Details/5
+        public async Task<IActionResult> Details(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        //    var department = await _departmentService.GetByIdAsync(id.Value, q => q.Include(d => d.Company));
-        //    if (department == null) return NotFound();
+            var department = await _departmentService.GetViewModelByIdAsync(id.Value);
+            if (department == null) return NotFound();
 
-        //    return View(department);
-        //}
+            return View(department);
+        }
 
-        //// GET: Departments/Create
-        //public async Task<IActionResult> Create()
-        //{
-        //    var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
+        // GET: Departments/Create
+        public async Task<IActionResult> Create()
+        {
+            var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
 
-        //    if (User.IsInRole(Role.Staff))
-        //    {
-        //        var companies = await _companyService.GetViewModelsAsync();
-        //        ViewBag.Companies = _mapper.Map<IEnumerable<CompanyViewModel>>(companies);
-        //    }
-                
+            if (User.IsInRole(Role.Staff))
+            {
+                var companies = await _companyService.GetCompaniesViewModelsAsync();
+                ViewBag.Companies = companies;
+            }
 
-        //    var model = new CreateDepartmentViewModel
-        //    {
-        //        CompanyId = companyId
-        //    };
-        //    return View(model);
-        //}
+            var model = new CreateDepartmentViewModel
+            {
+                CompanyId = companyId
+            };
+            return View(model);
+        }
 
-        //// POST: Departments/Create
-        //// To protect from overposting attacks, enable the specific properties you want to bind to.
-        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create(CreateDepartmentViewModel department)
-        //{
-        //    Console.WriteLine(department.CompanyId);
+        // POST: Departments/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateDepartmentViewModel department)
+        {
+            if (!ModelState.IsValid)
+            {
+                if (User.IsInRole(Role.Staff))
+                {
+                    var companies = await _companyService.GetCompaniesViewModelsAsync();
+                    ViewBag.Companies = companies;
+                }
+                return View(department);
+            }
 
-        //    var entity = _mapper.Map<Department>(department);
-        //    if (ModelState.IsValid)
-        //    {
-        //        await _departmentRepository.AddAsync(entity);
+            Result result = await _departmentService.AddAsync(department);
+            
+            if (!result.Succeeded)
+            {
+                if (User.IsInRole(Role.Staff))
+                {
+                    var companies = await _companyService.GetCompaniesViewModelsAsync();
+                    ViewBag.Companies = companies;
+                }
+                TempData[ToastMessages.Error] = $"Falha ao cadastrar setor: {string.Join(", ", result.Errors)}.";
 
-        //        return RedirectToAction(nameof(Index));
-        //    }
+                return View(department);
+            }
 
-        //    return View(entity);
-        //}
+            TempData[ToastMessages.Success] = "Setor criado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
 
         //// GET: Departments/Edit/5
         //public async Task<IActionResult> Edit(Guid? id)

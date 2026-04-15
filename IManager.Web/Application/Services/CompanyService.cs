@@ -156,4 +156,11 @@ public class CompanyService : ICompanyService
             return Result.Fail("Erro ao atualizar empresa.");
         }
     }
+
+    public async Task<IEnumerable<CompanyViewModel>?> GetCompaniesViewModelsAsync()
+    {
+        var departments = await _companyRepository.GetAllAsync();
+
+        return _mapper.Map<IEnumerable<CompanyViewModel>>(departments) ?? new List<CompanyViewModel>();
+    }
 }

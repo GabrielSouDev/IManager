@@ -1,5 +1,6 @@
 ﻿using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Shared;
+using System.Collections;
 
 namespace IManager.Web.Application.Interfaces;
 
@@ -12,4 +13,5 @@ public interface ICompanyService
     Task<PagedResult<CompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize);
     Task<CompanyViewModel?> GetViewModelByIdAsync(Guid value);
     Task<Result> UpdateAsync(Guid id, EditCompanyViewModel company);
+    Task<IEnumerable<CompanyViewModel>?> GetCompaniesViewModelsAsync();
 }

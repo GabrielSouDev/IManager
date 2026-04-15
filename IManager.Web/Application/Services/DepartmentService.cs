@@ -5,6 +5,7 @@ using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
+using IManager.Web.Shared;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -20,6 +21,13 @@ public class DepartmentService : IDepartmentService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _departmentRepository = departmentRepository;
+    }
+
+    public async Task<DepartmentViewModel?> GetViewModelByIdAsync(Guid id)
+    {
+        var department = await _departmentRepository.GetByIdAsync(id, q => q.Include(d => d.Company));
+        var model = _mapper.Map<DepartmentViewModel?>(department);
+        return model;
     }
 
     public async Task<IEnumerable<DepartmentHierarchyViewModel>> GetDepartmentsHierarchyViewModelAsync(Guid? companyId = null)
@@ -88,5 +96,28 @@ public class DepartmentService : IDepartmentService
         };
 
         return pagedViewModel;
+    }
+
+    public async Task<Result> AddAsync(CreateDepartmentViewModel department)
+    {
+        if(string.IsNullOrEmpty(department.Name))
+            return Result.Fail("O nome do setor vazio.");
+
+        var exists = await _departmentRepository.ExistsAsync(d => d.CompanyId == department.CompanyId && d.Name == department.Name);
+
+        if (exists)
+            return Result.Fail("Setor já existe.");
+
+        var entity = _mapper.Map<Department>(department);
+        try
+        {
+            await _departmentRepository.AddAsync(entity);
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Falha ao criar Setor, por favor tente novamente.");
+        }
+
+        return Result.Ok();
     }
 }
