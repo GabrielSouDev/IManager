@@ -11,4 +11,5 @@ public interface IDepartmentService
     Task<Result> AddAsync(CreateDepartmentViewModel department);
     Task<EditDepartmentViewModel> GetEditViewModelByIdAsync(Guid value);
     Task<Result> UpdateAsync(EditDepartmentViewModel department);
+    Task<Result> SoftDeleteAsync(Guid id);
 }

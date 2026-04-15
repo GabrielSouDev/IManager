@@ -147,4 +147,23 @@ public class DepartmentService : IDepartmentService
 
         return Result.Ok();
     }
+
+    public async Task<Result> SoftDeleteAsync(Guid id)
+    {
+        var exists = await _departmentRepository.ExistsAsync(d => d.Id == id);
+
+        if (!exists)
+            return Result.Fail("Setor não encontrado.");
+
+        try
+        {
+            await _departmentRepository.SoftDeleteAsync(id);
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Falha ao excluir Setor, por favor tente novamente.");
+        }
+
+        return Result.Ok();
+    }
 }

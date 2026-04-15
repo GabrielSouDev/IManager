@@ -1,16 +1,8 @@
-﻿using AutoMapper;
-using IManager.Web.Application.Interfaces;
-using IManager.Web.Application.Services;
-using IManager.Web.Data.Persistence;
+﻿using IManager.Web.Application.Interfaces;
 using IManager.Web.Domain.Consts;
-using IManager.Web.Domain.Entities.Companies;
-using IManager.Web.Domain.Interfaces.Repositories;
-using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Shared;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace IManager.Web.Presentation.Controllers
 {
@@ -125,8 +117,6 @@ namespace IManager.Web.Presentation.Controllers
         }
 
         // POST: Departments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, EditDepartmentViewModel department)
@@ -152,40 +142,38 @@ namespace IManager.Web.Presentation.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //// GET: Departments/Delete/5
-        //public async Task<IActionResult> Delete(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // GET: Departments/Delete/5
+        public async Task<IActionResult> Delete(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        //    var department = await _departmentRepository.GetByIdAsync(id.Value, q => q.Include(d => d.Company));
-        //    if (department == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var model = await _departmentService.GetViewModelByIdAsync(id.Value);
+            if (model == null)
+            {
+                return NotFound();
+            }
 
-        //    return View(department);
-        //}
+            return View(model);
+        }
 
-        //// POST: Departments/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(Guid id)
-        //{
-        //    var department = await _departmentRepository.GetByIdAsync(id);
-        //    if (department != null)
-        //    {
-        //       await _departmentRepository.SoftDeleteAsync(department);
-        //    }
+        // POST: Departments/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            Result result = await _departmentService.SoftDeleteAsync(id);
+            
+            if(!result.Succeeded)
+            {
+                TempData[ToastMessages.Error] = $"Falha ao desativar setor: {string.Join(", ", result.Errors)}.";
+                return RedirectToAction(nameof(Index));
+            }
 
-        //    return RedirectToAction(nameof(Index));
-        //}
-
-        //private async Task<bool> DepartmentExistsAsync(Guid id)
-        //{
-        //    return await _departmentRepository.ExistsAsync(d => d.Id == id);
-        //}
+            TempData[ToastMessages.Success] = "Setor alterado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
