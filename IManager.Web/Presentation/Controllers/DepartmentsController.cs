@@ -107,57 +107,50 @@ namespace IManager.Web.Presentation.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        //// GET: Departments/Edit/5
-        //public async Task<IActionResult> Edit(Guid? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // GET: Departments/Edit/5
+        public async Task<IActionResult> Edit(Guid? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        //    var department = await _departmentRepository.GetByIdAsync(id.Value);
-        //    if (department == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    ViewData["CompanyId"] = department.CompanyId;
-        //    return View(department);
-        //}
+            var department = await _departmentService.GetEditViewModelByIdAsync(id.Value);
+            if (department == null)
+            {
+                return NotFound();
+            }
 
-        //// POST: Departments/Edit/5
-        //// To protect from overposting attacks, enable the specific properties you want to bind to.
-        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(Guid id, [Bind("Name,CompanyId,Id,CreatedAt,LastModified")] Department department)
-        //{
-        //    if (id != department.Id)
-        //    {
-        //        return NotFound();
-        //    }
+            return View(department);
+        }
 
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            await _departmentRepository.UpdateAsync(department);
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!await DepartmentExistsAsync(department.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["CompanyId"] = department.CompanyId;
-        //    return View(department);
-        //}
+        // POST: Departments/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, EditDepartmentViewModel department)
+        {
+            if (id != department.Id)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(department);
+            }
+
+            Result result = await _departmentService.UpdateAsync(department);
+            if(!result.Succeeded)
+            {
+                TempData[ToastMessages.Error] = $"Erro ao editar setor: {string.Join(", ", result.Errors)}";
+                return View(department);
+            }
+
+            TempData[ToastMessages.Success] = "Setor atualizado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
 
         //// GET: Departments/Delete/5
         //public async Task<IActionResult> Delete(Guid? id)

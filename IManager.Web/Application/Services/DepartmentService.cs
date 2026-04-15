@@ -120,4 +120,31 @@ public class DepartmentService : IDepartmentService
 
         return Result.Ok();
     }
+
+    public async Task<EditDepartmentViewModel> GetEditViewModelByIdAsync(Guid value)
+    {
+        var entity = await _departmentRepository.GetByIdAsync(value);
+
+        return _mapper.Map<EditDepartmentViewModel>(entity);
+    }
+
+    public async Task<Result> UpdateAsync(EditDepartmentViewModel department)
+    {
+        var entity = await _departmentRepository.GetByIdAsync(department.Id);
+        if(entity is null)
+            return Result.Fail("Setor não encontrado.");
+
+        _mapper.Map(department, entity);
+
+        try
+        {
+            await _departmentRepository.UpdateAsync(entity);
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Falha ao atualizar Setor, por favor tente novamente.");
+        }
+
+        return Result.Ok();
+    }
 }

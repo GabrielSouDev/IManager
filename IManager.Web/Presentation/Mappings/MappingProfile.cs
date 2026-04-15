@@ -36,6 +36,7 @@ public class MappingProfile : Profile
 
         CreateMap<Department, DepartmentViewModel>().ReverseMap();
         CreateMap<Department, CreateDepartmentViewModel>().ReverseMap();
+        CreateMap<Department, EditDepartmentViewModel>().ReverseMap();
         CreateMap<Department, DepartmentHierarchyViewModel>().ReverseMap();
 
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap();
