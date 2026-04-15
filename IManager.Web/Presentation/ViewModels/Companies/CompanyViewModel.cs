@@ -9,9 +9,4 @@ public class CompanyViewModel
     public DateOnly FoundedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }
-
-    public static implicit operator CompanyViewModel?(EditCompanyViewModel? v)
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -10,6 +10,6 @@ public interface ICompanyService
     Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync();
     Task<EditCompanyViewModel?> GetEditViewModelByIdAsync(Guid value);
     Task<PagedResult<CompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize);
-    Task<CompanyViewModel> GetViewModelByIdAsync(Guid value);
+    Task<CompanyViewModel?> GetViewModelByIdAsync(Guid value);
     Task<Result> UpdateAsync(Guid id, EditCompanyViewModel company);
 }

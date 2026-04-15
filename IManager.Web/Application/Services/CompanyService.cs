@@ -61,7 +61,7 @@ public class CompanyService : ICompanyService
             await _companyRepository.SoftDeleteAsync(id);
             return Result.Ok();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Result.Fail("Falha ao desativar empresa.");
         }
@@ -131,7 +131,7 @@ public class CompanyService : ICompanyService
         return pagedViewModel;
     }
 
-    public async Task<CompanyViewModel> GetViewModelByIdAsync(Guid id)
+    public async Task<CompanyViewModel?> GetViewModelByIdAsync(Guid id)
     {
         var entity = await _companyRepository.GetByIdAsync(id);
         if (entity == null) return null;
@@ -148,7 +148,7 @@ public class CompanyService : ICompanyService
             if (entity is null && company.Id != id) Result.Fail("Empresa não encontrada.");
 
             _mapper.Map(company, entity);
-            await _companyRepository.UpdateAsync(entity);
+            await _companyRepository.UpdateAsync(entity!);
             return Result.Ok();
         }
         catch (Exception)
