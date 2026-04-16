@@ -1,0 +1,209 @@
+﻿@model PagedResult<CompanyViewModel>
+
+<form method="get" class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-sm btn-table" asp-action="Create">
+            Criar Nova Empresa
+        </a>
+    </div>
+
+    <div class="input-group w-25">
+        <select name="active" asp-for="ActiveFilter" class="form-select" onchange="this.form.submit()">
+            <option value="@ActiveFilter.All">Todos</option>
+            <option value="@ActiveFilter.Active">Ativos</option>
+            <option value="@ActiveFilter.Inactive">Inativos</option>
+        </select>
+
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Pesquisar" />
+
+        <button class="btn btn-sm btn-outline-secondary" type="submit">
+            🔍
+        </button>
+    </div>
+</form>
+
+<table id="table" class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>CNPJ</th>
+            <th>Razão Social</th>
+            <th>Nome Fantasia</th>
+            <th>Data de Fundação</th>
+            <th>Data de Criação</th>
+            <th class="text-center">Ativo</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr data-id="@item.Id" data-active="@item.IsActive">
+                <td>@MaskHelper.MaskCnpj(item.DocumentNumber)</td>
+                <td class="truncate">@item.LegalName</td>
+                <td class="truncate">@item.TradeName</td>
+                <td>@item.FoundedAt.ToString("dd/MM/yyyy")</td>
+                <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    <div class="btn-group gap-1" role="group">
+        <button id="btn-edit" class="btn btn-sm btn-primary" disabled>
+            Editar
+        </button>
+        <button id="btn-details" class="btn btn-sm btn-primary" disabled>
+            Detalhes
+        </button>
+        <button id="btn-delete" class="btn btn-sm btn-danger" disabled>
+            Desativar
+        </button>
+    </div>
+
+    @{
+        int total = Model.TotalCount;
+        int pageSize = Model.PageSize;
+        int page = Model.Page;
+
+        int start = total == 0
+            ? 0
+            : ((page - 1) * pageSize) + 1;
+
+        int end = Math.Min(page * pageSize, total);
+    }
+
+    <div class="d-flex justify-content-between align-items-center mt-3 gap-2">
+        <small class="text-muted">
+            @if (total > 0)
+            {
+                <span>Mostrando @start–@end de @total registros</span>
+            }
+            else
+            {
+                <span>Nenhum registro encontrado</span>
+            }
+        </small>
+
+        <div class="d-flex align-items-center gap-3">
+            <form method="get" class="m-0 p-0">
+                <input type="hidden" name="search" value="@Model.Search" />
+                <input type="hidden" name="active" value="@Model.ActiveFilter" />
+
+                <select name="pageSize"
+                        class="form-select w-auto"
+                        onchange="this.form.submit()">
+                    @foreach (var size in new[] { 10, 25, 50, 100 })
+                    {
+                        <option value="@size" selected="@(size == Model.PageSize)">
+                            @size por página
+                        </option>
+                    }
+                </select>
+            </form>
+
+            @{
+                var totalPages = (int)Math.Ceiling(
+                    (double)Model.TotalCount / Model.PageSize
+                );
+
+                var search = Model.Search?.ToString();
+                var active = Model.ActiveFilter;
+            }
+
+            <nav class="m-0 p-0">
+                <ul class="pagination pagination-sm mb-0">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-pageSize="@pageSize"
+                               asp-route-search="@search"
+                               asp-route-active="@active">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedId = null;
+    let selectedActive = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const table = document.getElementById("table");
+        const rows = document.querySelectorAll("#table tbody tr");
+
+        const btnEdit = document.getElementById("btn-edit");
+        const btnDetails = document.getElementById("btn-details");
+        const btnDelete = document.getElementById("btn-delete");
+
+        function clearSelection() {
+            rows.forEach(r => r.classList.remove("selected"));
+            selectedId = null;
+            selectedActive = null;
+
+            btnDelete.textContent = "Desativar";
+
+            btnEdit.disabled = true;
+            btnDetails.disabled = true;
+            btnDelete.disabled = true;
+        }
+
+        rows.forEach(function(row) {
+            row.addEventListener("click", function(event) {
+                event.stopPropagation();
+
+                if (this.classList.contains("selected")) {
+                    clearSelection();
+                    return;
+                }
+
+                clearSelection();
+
+                this.classList.add("selected");
+                selectedId = this.dataset.id;
+                selectedActive = this.dataset.active === "True";
+
+                btnEdit.disabled = false;
+                btnDetails.disabled = false;
+                btnDelete.disabled = false;
+
+                btnDelete.textContent = selectedActive ? "Desativar" : "Ativar";
+            });
+        });
+
+        document.addEventListener("click", function(event) {
+            if (!table.contains(event.target)) {
+                clearSelection();
+            }
+        });
+
+        btnEdit.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Companies/Edit/${selectedId}`;
+            }
+        });
+
+        btnDetails.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Companies/Details/${selectedId}`;
+            }
+        });
+
+        btnDelete.addEventListener("click", function() {
+            if (selectedId) {
+                window.location.href = `/Companies/Delete/${selectedId}`;
+            }
+        });
+    });
+</script>
