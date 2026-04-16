@@ -65,7 +65,7 @@
 
                 @if (User.IsInRole(Role.Staff))
                 {
-                    <td>@item.JobTitle.Department.Company.TradeName</td>
+                    <td class="truncate">@item.JobTitle.Department.Company.TradeName</td>
                     <td>@(MaskHelper.MaskCnpj(item.JobTitle.Department.Company.DocumentNumber))</td>
                 }
                 else
@@ -73,8 +73,8 @@
                     <td>@(MaskHelper.MaskCurrency(item.BaseSalary))</td>
                 }
 
-                <td>@item.JobTitle.Department.Name</td>
-                <td>@item.JobTitle.Name</td>
+                <td class="truncate">@item.JobTitle.Department.Name</td>
+                <td class="truncate">@item.JobTitle.Name</td>
                 <td>@item.Role</td>
                 <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
             </tr>
