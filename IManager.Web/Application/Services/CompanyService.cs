@@ -125,7 +125,8 @@ public class CompanyService : ICompanyService
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
-            Search = search
+            Search = search,
+            ActiveFilter = active
         };
 
         return pagedViewModel;

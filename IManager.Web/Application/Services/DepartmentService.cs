@@ -92,7 +92,8 @@ public class DepartmentService : IDepartmentService
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
-            Search = search
+            Search = search,
+            ActiveFilter = active
         };
 
         return pagedViewModel;
