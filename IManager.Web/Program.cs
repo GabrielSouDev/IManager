@@ -69,7 +69,33 @@ if (!app.Environment.IsDevelopment())
 else
     app.UseDeveloperExceptionPage();
 
-app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+app.UseStatusCodePages(async context =>
+{
+    var request = context.HttpContext.Request;
+    var response = context.HttpContext.Response;
+
+    if (request.Path.StartsWithSegments("/api"))
+    {
+        response.ContentType = "application/json";
+        await response.WriteAsync(
+            System.Text.Json.JsonSerializer.Serialize(new
+            {
+                status = response.StatusCode,
+                message = response.StatusCode switch
+                {
+                    401 => "Não autorizado.",
+                    403 => "Acesso negado.",
+                    404 => "Recurso não encontrado.",
+                    _ => "Erro inesperado."
+                }
+            })
+        );
+    }
+    else
+    {
+        context.HttpContext.Response.Redirect($"/Home/Error?statusCode={response.StatusCode}");
+    }
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();
