@@ -40,6 +40,14 @@ public class MappingProfile : Profile
         CreateMap<Department, DepartmentHierarchyViewModel>().ReverseMap();
 
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap();
+        CreateMap<JobTitle, IndexJobTitleModelView>()
+            .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.Department.Company.Id))
+            .ForMember(dest => dest.CompanyTradeName, opt => opt.MapFrom(src=>src.Department.Company.TradeName))
+            .ForMember(dest => dest.CompanyDocumentNumber, opt => opt.MapFrom(src => src.Department.Company.DocumentNumber))
+            .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.Department.Id))
+            .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name))
+            .ReverseMap();
+
         CreateMap<JobTitle, JobTitleHierarchyModelView>().ReverseMap();
 
         CreateMap<TimeEntry, TimeEntryDTO>().ReverseMap();

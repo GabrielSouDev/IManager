@@ -1,77 +1,207 @@
-﻿@model IEnumerable<IManager.Web.Domain.Entities.Companies.JobTitle>
+﻿@model PagedResult<IndexJobTitleModelView>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cargos";
 }
 
-<h1>Index</h1>
+<form method="get" class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a class="btn btn-sm btn-table" asp-action="Create">
+            Criar Novo Cargo
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+    <div class="input-group w-25">
+        <select name="active" asp-for="ActiveFilter" class="form-select" onchange="this.form.submit()">
+            <option value="@ActiveFilter.All">Todos</option>
+            <option value="@ActiveFilter.Active">Ativos</option>
+            <option value="@ActiveFilter.Inactive">Inativos</option>
+        </select>
+
+        <input type="text"
+               name="search"
+               value="@Model.Search"
+               class="form-control"
+               placeholder="Pesquisar" />
+
+        <button class="btn btn-sm btn-outline-secondary" type="submit">
+            🔍
+        </button>
+    </div>
+</form>
+
+<table id="table" class="table table-hover">
+    <thead class="table-light">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Department)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsHazard)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsUnhealthy)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsCommissioned)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DailyHours)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LastModified)
-            </th>
-            <th></th>
+            <th>Nome</th>
+            <th>Setor</th>
+            @if(User.IsInRole(Role.Staff))
+            {
+                <th>Empresa</th>
+                <th>Doc. Empresa</th>
+            }
+            <th>Perigoso</th>
+            <th>Insalubre</th>
+            <th>Comissionado</th>
+            <th>Horas Diárias</th>
+            <th class="text-center">Ativo</th>
         </tr>
     </thead>
+
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Department.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsHazard)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsUnhealthy)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsCommissioned)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DailyHours)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LastModified)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model.Items)
+        {
+            <tr data-id="@item.Id" data-active="@item.IsActive">
+                <td>@item.Name</td>
+                <td>@item.DepartmentName</td>
+                @if(User.IsInRole(Role.Staff))
+                {
+                    <td>@item.CompanyTradeName</td>
+                    <td>@MaskHelper.MaskCnpj(item.CompanyDocumentNumber)</td>
+                }
+                <td class="text-center">@(item.IsHazard ? "✅" : "❌")</td>
+                <td class="text-center">@(item.IsUnhealthy ? "✅" : "❌")</td>
+                <td class="text-center">@(item.IsCommissioned ? "✅" : "❌")</td>
+                <td>@item.DailyHours</td>
+                <td class="text-center">@((item.IsActive) ? "✅" : "❌")</td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+
+    <div class="btn-group gap-1">
+        <button id="btn-edit" class="btn btn-sm btn-primary" disabled>Editar</button>
+        <button id="btn-details" class="btn btn-sm btn-primary" disabled>Detalhes</button>
+        <button id="btn-delete" class="btn btn-sm btn-danger" disabled>Desativar</button>
+    </div>
+
+    @{
+        int total = Model.TotalCount;
+        int pageSize = Model.PageSize;
+        int page = Model.Page;
+
+        int start = total == 0 ? 0 : ((page - 1) * pageSize) + 1;
+        int end = Math.Min(page * pageSize, total);
+    }
+
+    <div class="d-flex align-items-center gap-3">
+
+        <small class="text-muted">
+            @if (total > 0)
+            {
+                <span>Mostrando @start–@end de @total registros</span>
+            }
+            else
+            {
+                <span>Nenhum registro encontrado</span>
+            }
+        </small>
+
+        <form method="get" class="m-0 p-0">
+            <input type="hidden" name="search" value="@Model.Search" />
+            <input type="hidden" name="active" value="@Model.ActiveFilter" />
+
+            <select name="pageSize"
+                    class="form-select w-auto"
+                    onchange="this.form.submit()">
+                @foreach (var size in new[] { 10, 25, 50, 100 })
+                {
+                    <option value="@size" selected="@(size == Model.PageSize)">
+                        @size por página
+                    </option>
+                }
+            </select>
+        </form>
+
+        @{
+            var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+            var active = Model.ActiveFilter;
+        }
+
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@i"
+                           asp-route-pageSize="@pageSize"
+                           asp-route-search="@Model.Search"
+                           asp-route-active="@active">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script>
+    let selectedId = null;
+    let selectedActive = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const table = document.getElementById("table");
+        const rows = document.querySelectorAll("#table tbody tr");
+
+        const btnEdit = document.getElementById("btn-edit");
+        const btnDetails = document.getElementById("btn-details");
+        const btnDelete = document.getElementById("btn-delete");
+
+        function clearSelection() {
+            rows.forEach(r => r.classList.remove("selected"));
+            selectedId = null;
+            selectedActive = null;
+
+            btnEdit.disabled = true;
+            btnDetails.disabled = true;
+            btnDelete.disabled = true;
+        }
+
+        rows.forEach(row => {
+            row.addEventListener("click", function () {
+
+                if (this.classList.contains("selected")) {
+                    clearSelection();
+                    return;
+                }
+
+                clearSelection();
+
+                this.classList.add("selected");
+                selectedId = this.dataset.id;
+                selectedActive = this.dataset.active === "True";
+
+                btnEdit.disabled = false;
+                btnDetails.disabled = false;
+                btnDelete.disabled = false;
+
+                btnDelete.textContent = selectedActive ? "Desativar" : "Ativar";
+            });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!table.contains(e.target)) {
+                clearSelection();
+            }
+        });
+
+        btnEdit.addEventListener("click", function () {
+            if (selectedId)
+                window.location.href = `/JobTitles/Edit/${selectedId}`;
+        });
+
+        btnDetails.addEventListener("click", function () {
+            if (selectedId)
+                window.location.href = `/JobTitles/Details/${selectedId}`;
+        });
+
+        btnDelete.addEventListener("click", function () {
+            if (selectedId)
+                window.location.href = `/JobTitles/Delete/${selectedId}`;
+        });
+    });
+</script>

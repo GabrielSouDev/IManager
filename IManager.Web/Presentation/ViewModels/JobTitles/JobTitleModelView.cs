@@ -8,5 +8,5 @@ public class JobTitleModelView
     public bool IsUnhealthy { get; set; } = false;
     public bool IsCommissioned { get; set; } = false;
     public TimeSpan DailyHours { get; set; } = TimeSpan.FromHours(8);
-
+    public bool IsActive { get; set; } = false;
 }

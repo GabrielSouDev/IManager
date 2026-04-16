@@ -12,6 +12,7 @@ public static class ServiceExtensions
         builder.Services.AddScoped<IAccountService, AccountService>();
         builder.Services.AddScoped<ICompanyService, CompanyService>();
         builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+        builder.Services.AddScoped<IJobTitleService, JobTitleService>();
 
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddScoped<IEmailSender<User>, IdentityEmailSender>();
