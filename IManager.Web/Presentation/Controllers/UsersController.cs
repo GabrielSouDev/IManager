@@ -1,132 +1,133 @@
 ﻿using IManager.Web.Application.Interfaces;
 using IManager.Web.Domain.Consts;
 using IManager.Web.Presentation.ViewModels.Account;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IManager.Web.Presentation.Controllers
+namespace IManager.Web.Presentation.Controllers;
+
+[Authorize(Policy = Poly.StaffOrAdmin)]
+public class UsersController : Controller
 {
-    public class UsersController : Controller
+    private readonly IAccountService _accountService;
+    private readonly IDepartmentService _departmentService;
+
+    public UsersController(IAccountService accountService, IDepartmentService departmentService)
     {
-        private readonly IAccountService _accountService;
-        private readonly IDepartmentService _departmentService;
+        _accountService = accountService;
+        _departmentService = departmentService;
+    }
 
-        public UsersController(IAccountService accountService, IDepartmentService departmentService)
+    // GET: Users
+    public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] ActiveFilter active = ActiveFilter.Active, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        PagedResult<AccountViewModel> model;
+        if (User.IsInRole(Role.Staff))
+            model = await _accountService.GetPagedAsync(page, pageSize, active, search: search);
+        else
         {
-            _accountService = accountService;
-            _departmentService = departmentService;
+            var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
+            model = await _accountService.GetPagedAsync(page, pageSize, active, companyId, search);
         }
 
-        // GET: Users
-        public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] ActiveFilter active = ActiveFilter.Active, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            PagedResult<AccountViewModel> model;
-            if (User.IsInRole(Role.Staff))
-                model = await _accountService.GetPagedAsync(page, pageSize, active, search: search);
-            else
-            {
-                var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-                model = await _accountService.GetPagedAsync(page, pageSize, active, companyId, search);
-            }
+        return View(model);
+    }
 
-            return View(model);
+    // GET: Users/Details/5
+    public async Task<IActionResult> Details(Guid? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
         }
 
-        // GET: Users/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
+        if (userProfile == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
-            if (userProfile == null)
-            {
-                return NotFound();
-            }
-
-            return View(userProfile);
+            return NotFound();
         }
 
-        // GET: Users/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        return View(userProfile);
+    }
+
+    // GET: Users/Edit/5
+    public async Task<IActionResult> Edit(Guid? id)
+    {
+        if (id == null) return NotFound();
+        
+        var model = await _accountService.GetEditAccountViewModelByIdAsync(id.Value);
+
+        if (model == null) return NotFound();
+
+        ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+        return View(model);
+    }
+
+    // POST: Users/Edit/5
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, EditAccountViewModel model)
+    {
+        if (id != model.Id)
         {
-            if (id == null) return NotFound();
-            
-            var model = await _accountService.GetEditAccountViewModelByIdAsync(id.Value);
+            return NotFound();
+        }
 
-            if (model == null) return NotFound();
-
+        if (!ModelState.IsValid)
+        {
             ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
             return View(model);
         }
 
-        // POST: Users/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, EditAccountViewModel model)
+        var result = await _accountService.EditAccountAsync(id, model);
+            
+        if (result.Succeeded)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
+            TempData[ToastMessages.Success] = "Dados atualizados com sucesso!";
 
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
-                return View(model);
-            }
-
-            var result = await _accountService.EditAccountAsync(id, model);
-                
-            if (result.Succeeded)
-            {
-                TempData[ToastMessages.Success] = "Dados atualizados com sucesso!";
-
-                return RedirectToAction("Details", new {id});
-            }
-
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error);
-
-                            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
-            return View(model);
+            return RedirectToAction("Details", new {id});
         }
 
-        // GET: Users/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        foreach (var error in result.Errors)
+            ModelState.AddModelError("", error);
+
+                        ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+        return View(model);
+    }
+
+    // GET: Users/Delete/5
+    public async Task<IActionResult> Delete(Guid? id)
+    {
+        if (id == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
-            if (userProfile == null)
-            {
-                return NotFound();
-            }
-
-            return View(userProfile);
+            return NotFound();
         }
 
-        // POST: Users/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
+        if (userProfile == null)
         {
-            var result = await _accountService.SoftDeleteAsync(id);
+            return NotFound();
+        }
 
-            if (!result.Succeeded)
-            {
-                TempData["Error"] = result.Errors.FirstOrDefault()
-                    ?? "Erro ao atualizar informação de usuário.";
+        return View(userProfile);
+    }
 
-                return RedirectToAction(nameof(Index));
-            }
+    // POST: Users/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    {
+        var result = await _accountService.SoftDeleteAsync(id);
 
-            TempData["Success"] = "Usuário atualizado com sucesso!";
+        if (!result.Succeeded)
+        {
+            TempData["Error"] = result.Errors.FirstOrDefault()
+                ?? "Erro ao atualizar informação de usuário.";
+
             return RedirectToAction(nameof(Index));
         }
+
+        TempData["Success"] = "Usuário atualizado com sucesso!";
+        return RedirectToAction(nameof(Index));
     }
 }

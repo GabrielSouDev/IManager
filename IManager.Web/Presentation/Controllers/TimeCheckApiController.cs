@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using IManager.Web.Domain.Consts;
 using IManager.Web.Domain.Entities.TimeTrackings;
 using IManager.Web.Domain.Enums;
 using IManager.Web.Domain.Interfaces.Persistence;
@@ -15,6 +16,7 @@ namespace IManager.Web.Presentation.Controllers;
 
 [ApiController]
 [Route("api/timecheck")]
+[Authorize(Roles = Role.User)]
 public class TimeCheckApiController : ControllerBase
 {
     private readonly IRepository<TimeEntry> _timeEntryRepository;
