@@ -160,7 +160,9 @@ public class AccountService : IAccountService
         var userProfile = await _userProfileRepository.GetByIdAsync(user.Id)
             ?? throw new ArgumentException("Usuário não encontrado!");
 
-        return _mapper.Map<AccountDetailsViewModel>(userProfile);
+        var viewModel = _mapper.Map<AccountDetailsViewModel>(userProfile);
+        _mapper.Map(user, viewModel);
+        return viewModel;
     }
 
     public async Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model)
