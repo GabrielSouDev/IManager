@@ -1,5 +1,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
-RUN apk add --no-cache krb5-libs
+RUN apk add --no-cache icu-libs krb5-libs
+
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080

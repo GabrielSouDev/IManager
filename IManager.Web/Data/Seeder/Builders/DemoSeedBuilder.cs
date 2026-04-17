@@ -77,7 +77,7 @@ public static class DemoSeedBuilder
         var lastNames = new[]
         {
             "Souza","Silva","Oliveira","Pereira","Lima","Gomes","Ribeiro","Almeida",
-            "Costa","Araújo","Rocha","Martins","Barbosa","Ferreira","Teixeira","Freitas"
+            "Costa","Araujo","Rocha","Martins","Barbosa","Ferreira","Teixeira","Freitas"
         };
 
         var users = new List<UserSeedData>();
@@ -104,7 +104,7 @@ public static class DemoSeedBuilder
             var last = lastNames[RandomNumberGenerator.GetInt32(lastNames.Length)];
             var job = jobTitles[RandomNumberGenerator.GetInt32(jobTitles.Count)];
 
-            var baseEmail = RemoveAccents($"{first.ToLower()}.{last.ToLower()}@demo.com");
+            var baseEmail = NormalizeKey($"{first}.{last}") + "@demo.com";
             var email = GenerateUniqueEmail(baseEmail);
 
             users.Add(new UserSeedData(
