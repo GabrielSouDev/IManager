@@ -4,7 +4,9 @@ using IManager.Web.Presentation.ViewModels.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace IManager.Web.Presentation.Controllers;
 
@@ -28,15 +30,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Register()
     {
         var model = new RegisterViewModel();
-        if (User.IsInRole(Role.Staff))
-            ViewBag.Companies = await _companyService.GetCompaniesHierarchyViewModelAsync();
-        else
-        {
-            var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(companyId);
-
-            model.CompanyId = companyId;
-        }
+        await AddViewBagHierarchyViewModel(model);
 
         return View(model);
     }
@@ -46,7 +40,11 @@ public class AccountController : Controller
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
+        {
+            await AddViewBagHierarchyViewModel(model);
+
             return View(model);
+        }
 
         var result = await _accountService.RegisterAsync(model);
         if (result.Succeeded)
@@ -62,6 +60,9 @@ public class AccountController : Controller
             catch
             {
                 TempData[ToastMessages.Error] = "Erro ao enviar o e-mail de confirmação. Tente novamente mais tarde.";
+
+                await AddViewBagHierarchyViewModel(model);
+
                 return View(model);
             }
         }
@@ -308,5 +309,20 @@ public class AccountController : Controller
         return View(model);
     }
 
+    #endregion
+
+    #region Helpers
+    private async Task AddViewBagHierarchyViewModel(RegisterViewModel model)
+    {
+        if (User.IsInRole(Role.Staff))
+            ViewBag.Companies = await _companyService.GetCompaniesHierarchyViewModelAsync();
+        else
+        {
+            var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
+            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(companyId);
+
+            model.CompanyId = companyId;
+        }
+    }
     #endregion
 }

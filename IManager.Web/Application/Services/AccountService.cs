@@ -53,6 +53,7 @@ public class AccountService : IAccountService
                 return Result.Fail(result.Errors.Select(r => r.Description));
             }
             var userProfile = _mapper.Map<UserProfile>(model);
+            userProfile.Id = user.Id;
 
             await _userProfileRepository.AddAsync(userProfile);
 
@@ -76,8 +77,9 @@ public class AccountService : IAccountService
             await _unitOfWork.CommitAsync();
             return Result.Ok();
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine(ex.Message);
             await _unitOfWork.RollbackAsync();
             return Result.Fail("Erro ao criar conta. Tente novamente.");
         }
