@@ -8,20 +8,19 @@
 > 
 > Dessa forma, o risco de exploração neste contexto é considerado baixo. Em um ambiente de produção, seria recomendada a adoção de alternativas mais seguras ou a aplicação de mecanismos adicionais de mitigação.apeamento é realizado sobre objetos com estrutura conhecida e controlada, não sendo expostas estruturas recursivas profundas
 
-
-
 # IManager
 
 Sistema de RH para gestão de setores, cargos, folha de pagamento e holerites, com persistência de registros de ponto via integração externa com aplicação IMark. 
 
 ## 🛠 Tecnologias
 
-- ASP.NET Core MVC (.NET 10)
+- Aplicação híbrida (MVC + API) ASP.NET Core (.NET 10)
 - ASP.NET Core Identity
 - Entity Framework Core + Npgsql (PostgreSQL)
 - FluentValidation
 - Serilog
 - MailKit
+- AutoMapper
 - Docker + Docker Compose
 
 ## 🐳 Rodando com Docker
@@ -44,26 +43,38 @@ Sistema de RH para gestão de setores, cargos, folha de pagamento e holerites, c
 
 # Postgres
 
-POSTGRES_NAME=your_database_name
-POSTGRES_USER=your_database_user
-POSTGRES_PASSWORD=your_database_password
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+* POSTGRES_NAME=your_database_name
+
+* POSTGRES_USER=your_database_user
+
+* POSTGRES_PASSWORD=your_database_password
+
+* POSTGRES_HOST=localhost
+
+* POSTGRES_PORT=5432
 
 # Admin User
 
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=YourAdminPassword@123
-ADMIN_CONFIRM_PASSWORD=YourAdminPassword@123
+* ADMIN_EMAIL=admin@example.com
+
+* ADMIN_PASSWORD=YourAdminPassword@123
+
+* ADMIN_CONFIRM_PASSWORD=YourAdminPassword@123
 
 # Email (SMTP)
 
-EMAIL_HOST=smtp.yourprovider.com
-EMAIL_PORT=587
-EMAIL_USERNAME=your_smtp_username
-EMAIL_PASSWORD=your_smtp_password
-EMAIL_FROM_NAME=YourAppName
-EMAIL_FROM_EMAIL=noreply@yourdomain.com
+* EMAIL_HOST=smtp.yourprovider.com
+  
+
+* EMAIL_PORT=587
+
+* EMAIL_USERNAME=your_smtp_username
+
+* EMAIL_PASSWORD=your_smtp_password
+
+* EMAIL_FROM_NAME=YourAppName
+
+* EMAIL_FROM_EMAIL=noreply@yourdomain.com
 
 ```
 3. Suba os containers:
