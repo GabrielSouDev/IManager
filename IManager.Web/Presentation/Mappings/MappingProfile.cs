@@ -44,12 +44,23 @@ public class MappingProfile : Profile
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, IndexJobTitleModelView>()
             .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.Department.Company.Id))
-            .ForMember(dest => dest.CompanyTradeName, opt => opt.MapFrom(src=>src.Department.Company.TradeName))
+            .ForMember(dest => dest.CompanyTradeName, opt => opt.MapFrom(src => src.Department.Company.TradeName))
             .ForMember(dest => dest.CompanyDocumentNumber, opt => opt.MapFrom(src => src.Department.Company.DocumentNumber))
             .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.Department.Id))
             .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name))
             .ReverseMap().MaxDepth(5);
-
+        CreateMap<JobTitle, CreateJobTitleModelView>()
+            .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.Department.Company.Id))
+            .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.Department.Id))
+            .MaxDepth(5);
+        CreateMap<CreateJobTitleModelView, JobTitle>()
+            .ForMember(d => d.Department, opt => opt.Ignore())
+            .MaxDepth(5);
+        CreateMap<JobTitle, DetailsJobTitleModelView>()
+            .ForMember(dest => dest.CompanyTradeName, opt => opt.MapFrom(src => src.Department.Company.TradeName))
+            .ForMember(dest => dest.CompanyDocumentNumber, opt => opt.MapFrom(src => src.Department.Company.DocumentNumber))
+            .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name))
+            .ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, JobTitleHierarchyModelView>().ReverseMap().MaxDepth(5);
 
         CreateMap<TimeEntry, TimeEntryDTO>().ReverseMap().MaxDepth(5);

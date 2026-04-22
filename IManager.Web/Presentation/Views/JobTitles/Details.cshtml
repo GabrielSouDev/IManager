@@ -1,4 +1,4 @@
-﻿@model IManager.Web.Domain.Entities.Companies.JobTitle
+﻿@model DetailsJobTitleModelView
 
 @{
     ViewData["Title"] = "Details";
@@ -10,17 +10,32 @@
     <h4>JobTitle</h4>
     <hr />
     <dl class="row">
+        @if (User.IsInRole(Role.Staff))
+        {
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.CompanyTradeName)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.CompanyTradeName)
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.CompanyDocumentNumber)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.CompanyDocumentNumber)
+            </dd>
+        }
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DepartmentName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DepartmentName)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Department)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Department.Name)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.IsHazard)
@@ -45,18 +60,6 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.DailyHours)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LastModified)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LastModified)
         </dd>
     </dl>
 </div>

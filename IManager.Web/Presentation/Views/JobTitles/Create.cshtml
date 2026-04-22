@@ -1,49 +1,91 @@
-﻿@model IManager.Web.Domain.Entities.Companies.JobTitle
+﻿@model CreateJobTitleModelView
 
 @{
     ViewData["Title"] = "Create";
+
+    bool isStaff = User.IsInRole(Role.Staff);
+    var companies = ViewBag.Companies as IEnumerable<CompanyHierarchyViewModel>;
+    var departments = ViewBag.Departments as IEnumerable<DepartmentHierarchyViewModel>;
 }
 
 <h1>Create</h1>
 
 <h4>JobTitle</h4>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @* EMPRESA *@
+            @if (isStaff && companies != null)
+            {
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <select id="companySelect" asp-for="CompanyId" class="form-control">
+                        <option value="">Selecione a empresa</option>
+                        @foreach (var company in companies)
+                        {
+                            <option value="@company.Id">@company.TradeName</option>
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="CompanyId" />
+            }
+
+            @* DEPARTAMENTO *@
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label>Departamento</label>
+                <select id="departmentSelect" asp-for="DepartmentId" class="form-control">
+                    <option value="">Selecione o departamento</option>
+
+                    @* Se não for staff, já carrega direto *@
+                    @if (!isStaff && departments != null)
+                    {
+                        foreach (var dep in departments)
+                        {
+                            <option value="@dep.Id">@dep.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Name"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
+
+            <div class="form-check">
+                <input class="form-check-input" asp-for="IsHazard" />
+                <label class="form-check-label">@Html.DisplayNameFor(m => m.IsHazard)</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" asp-for="IsUnhealthy" />
+                <label class="form-check-label">@Html.DisplayNameFor(m => m.IsUnhealthy)</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" asp-for="IsCommissioned" />
+                <label class="form-check-label">@Html.DisplayNameFor(m => m.IsCommissioned)</label>
+            </div>
+
             <div class="form-group">
-                <label asp-for="DepartmentId" class="control-label"></label>
-                <select asp-for="DepartmentId" class ="form-control" asp-items="ViewBag.DepartmentId"></select>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsHazard" /> @Html.DisplayNameFor(model => model.IsHazard)
-                </label>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsUnhealthy" /> @Html.DisplayNameFor(model => model.IsUnhealthy)
-                </label>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsCommissioned" /> @Html.DisplayNameFor(model => model.IsCommissioned)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="DailyHours" class="control-label"></label>
+                <label asp-for="DailyHours"></label>
                 <input asp-for="DailyHours" class="form-control" />
                 <span asp-validation-for="DailyHours" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mt-2">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
+
         </form>
     </div>
 </div>
@@ -51,7 +93,59 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @if (isStaff && companies != null)
+    {
+        <script>
+            const companies = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(companies));
+
+            const companySelect = document.getElementById("companySelect");
+            const departmentSelect = document.getElementById("departmentSelect");
+
+            if (companySelect && departmentSelect) {
+                companySelect.addEventListener("change", (e) => {
+
+                    const selectedId = e.target.value;
+
+                    // limpa departamentos
+                    departmentSelect.innerHTML = '<option value="">Selecione o departamento</option>';
+
+                    const company = companies.find(c => c.Id == selectedId);
+                    if (!company) return;
+
+                    company.Departments.forEach(dep => {
+                        const option = document.createElement("option");
+                        option.value = dep.Id;
+                        option.text = dep.Name;
+                        departmentSelect.appendChild(option);
+                    });
+                });
+            }
+        </script>
+    }
+
+    @if (!isStaff && departments != null)
+    {
+        <script>
+            const departments = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(departments));
+
+            const departmentSelect = document.getElementById("departmentSelect");
+
+            if (departmentSelect) {
+                departmentSelect.addEventListener("change", (e) => {
+
+                    const selectedId = e.target.value;
+                    const department = departments.find(d => d.Id == selectedId);
+
+                    if (!department) return;
+
+                    console.log("Departamento selecionado:", department);
+                });
+            }
+        </script>
+    }
 }

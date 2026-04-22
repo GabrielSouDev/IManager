@@ -3,8 +3,10 @@ using IManager.Web.Application.Services;
 using IManager.Web.Domain.Consts;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Interfaces.Repositories;
+using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Presentation.ViewModels.JobTitles;
+using IManager.Web.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +17,14 @@ namespace IManager.Web.Presentation.Controllers;
 public class JobTitlesController : Controller
 {
     private readonly  IJobTitleService _jobTitleService;
+    private readonly ICompanyService _companiesService;
+    private readonly IDepartmentService _departmentsService;
 
-    public JobTitlesController(IJobTitleService jobTitleService)
+    public JobTitlesController(IJobTitleService jobTitleService, ICompanyService companiesService, IDepartmentService departmentsService)
     {
         _jobTitleService = jobTitleService;
+        _companiesService = companiesService;
+        _departmentsService = departmentsService;
     }
 
     // GET: JobTitles
@@ -38,39 +44,50 @@ public class JobTitlesController : Controller
         return View(model);
     }
 
-    //// GET: JobTitles/Details/5
-    //public async Task<IActionResult> Details(Guid? id)
-    //{
-    //    if (id == null) return NotFound();
+    // GET: JobTitles/Details/5
+    public async Task<IActionResult> Details(Guid? id)
+    {
+        if (id == null) return NotFound();
 
-    //    var jobTitle = await _JobTitleRepository.GetByIdAsync(id.Value, q => q.Include(d => d.Department));
-    //    if (jobTitle == null) return NotFound();
+        DetailsJobTitleModelView model = await _jobTitleService.GetDetailsModelView(id.Value);
+        if (model == null) return NotFound();
 
-    //    return View(jobTitle);
-    //}
+        return View(model);
+    }
 
-    //// GET: JobTitles/Create
-    //public IActionResult Create()
-    //{
-    //    return View();
-    //}
+    // GET: JobTitles/Create
+    public async Task<IActionResult> Create()
+    {
+        var model = new CreateJobTitleModelView();
 
-    //// POST: JobTitles/Create
-    //// To protect from overposting attacks, enable the specific properties you want to bind to.
-    //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Create([Bind("Name,DepartmentId,IsHazard,IsUnhealthy,IsCommissioned,DailyHours,Id,CreatedAt,LastModified")] JobTitle jobTitle)
-    //{
-    //    if (ModelState.IsValid)
-    //    {
-    //        jobTitle.Id = Guid.NewGuid();
-    //        await _JobTitleRepository.AddAsync(jobTitle);
-    //        return RedirectToAction(nameof(Index));
-    //    }
+        await AddViewBagHierarchyViewModel(model);
+        return View(model);
+    }
 
-    //    return View(jobTitle);
-    //}
+    // POST: JobTitles/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(CreateJobTitleModelView model)
+    {
+        if (!ModelState.IsValid)
+        {
+            await AddViewBagHierarchyViewModel(model);
+            return View(model);
+        }
+
+        Result result = await _jobTitleService.AddJobTitle(model);
+
+        if(!result.Succeeded)
+        {
+            await AddViewBagHierarchyViewModel(model);
+            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar o cadastro: {string.Join(", ", result.Errors)}.";
+            return View(model);
+        }
+
+        TempData[ToastMessages.Success] = "Cargo cadastrado com sucesso!";
+
+        return RedirectToAction(nameof(Index));
+    }
 
     //// GET: JobTitles/Edit/5
     //public async Task<IActionResult> Edit(Guid? id)
@@ -146,4 +163,20 @@ public class JobTitlesController : Controller
     //{
     //    return await _JobTitleRepository.ExistsAsync(j => j.Id == id);
     //}
+
+    #region Helpers
+    private async Task AddViewBagHierarchyViewModel(CreateJobTitleModelView model)
+    {
+        if (User.IsInRole(Role.Staff))
+            ViewBag.Companies = await _companiesService.GetCompaniesHierarchyViewModelAsync();
+        else
+        {
+            var companyId = GetCompanyId();
+            ViewBag.Departments = await _departmentsService.GetDepartmentsHierarchyViewModelAsync(companyId);
+            model.CompanyId = companyId;
+        }
+    }
+
+    private Guid GetCompanyId() => Guid.Parse(User.FindFirst("CompanyId")!.Value);
+    #endregion
 }
