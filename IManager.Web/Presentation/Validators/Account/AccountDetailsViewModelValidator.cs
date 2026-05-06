@@ -8,6 +8,10 @@ public class AccountDetailsViewModelValidator : AbstractValidator<AccountDetails
 {
     public AccountDetailsViewModelValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("o Id é obrigatório.");
+
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("O Nome Completo é obrigatório.")
             .Matches(@"^[A-Za-zÀ-ÿ]+\s[A-Za-zÀ-ÿ\s]+$").WithMessage("Digite o nome e sobrenome.");

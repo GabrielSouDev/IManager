@@ -48,6 +48,13 @@ public class JobTitleService : IJobTitleService
         return model ?? new();
     }
 
+    public async Task<EditJobTitleModelView?> GetEditModelViewByIdAsync(Guid id)
+    {
+        var emtity = await _jobTitleRepository.GetByIdAsync(id);
+
+        return _mapper.Map<EditJobTitleModelView?>(emtity);
+    }
+
     public async Task<PagedResult<IndexJobTitleModelView>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize, Guid? companyId = null)
     {
         Func<IQueryable<JobTitle>, IQueryable<JobTitle>> query = q =>
@@ -104,5 +111,23 @@ public class JobTitleService : IJobTitleService
         };
 
         return pagedViewModel;
+    }
+
+    public async Task<Result> UpdateAsync(EditJobTitleModelView model)
+    {
+        var entity = await _jobTitleRepository.GetByIdAsync(model.Id);
+
+        _mapper.Map(model, entity);
+
+        try
+        {
+            await _jobTitleRepository.UpdateAsync(entity);
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Por favor, tente novamente.");
+        }
+
+        return Result.Ok();
     }
 }

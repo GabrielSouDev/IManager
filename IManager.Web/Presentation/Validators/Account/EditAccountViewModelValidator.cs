@@ -7,6 +7,14 @@ public class EditAccountViewModelValidator : AbstractValidator<EditAccountViewMo
 {
     public EditAccountViewModelValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("o Id é obrigatório.");
+
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("o Id é obrigatório.");
+
         RuleFor(x => x.DepartmentId)
             .NotEmpty().WithMessage("Selecione o Setor.");
 

@@ -89,51 +89,46 @@ public class JobTitlesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    //// GET: JobTitles/Edit/5
-    //public async Task<IActionResult> Edit(Guid? id)
-    //{
-    //    if (id == null) return NotFound();
+    // GET: JobTitles/Edit/5
+    public async Task<IActionResult> Edit(Guid? id)
+    {
+        if (id == null) return NotFound();
 
-    //    var jobTitle = await _JobTitleRepository.GetByIdAsync(id.Value);
+        var jobTitle = await _jobTitleService.GetEditModelViewByIdAsync(id.Value);
 
-    //    if (jobTitle == null) return NotFound();
+        if (jobTitle == null) return NotFound();
 
-    //    return View(jobTitle);
-    //}
+        return View(jobTitle);
+    }
 
-    //// POST: JobTitles/Edit/5
-    //// To protect from overposting attacks, enable the specific properties you want to bind to.
-    //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-    //[HttpPost]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> Edit(Guid id, [Bind("Name,DepartmentId,IsHazard,IsUnhealthy,IsCommissioned,DailyHours,Id,CreatedAt,LastModified")] JobTitle jobTitle)
-    //{
-    //    if (id != jobTitle.Id)
-    //    {
-    //        return NotFound();
-    //    }
+    // POST: JobTitles/Edit/5
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, EditJobTitleModelView model)
+    {
+        if (id != model.Id)
+        {
+            return NotFound();
+        }
 
-    //    if (ModelState.IsValid)
-    //    {
-    //        try
-    //        {
-    //            await _JobTitleRepository.UpdateAsync(jobTitle);
-    //        }
-    //        catch (DbUpdateConcurrencyException)
-    //        {
-    //            if (!await JobTitleExistsAsync(jobTitle.Id))
-    //            {
-    //                return NotFound();
-    //            }
-    //            else
-    //            {
-    //                throw;
-    //            }
-    //        }
-    //        return RedirectToAction(nameof(Index));
-    //    }
-    //    return View(jobTitle);
-    //}
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        Result result = await _jobTitleService.UpdateAsync(model);
+
+        if(!result.Succeeded)
+        {
+            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar a atualização: {string.Join(", ", result.Errors)}.";
+            return View(model);
+        }
+
+        TempData[ToastMessages.Success] = "Cargo atualizado com sucesso!";
+        return RedirectToAction(nameof(Index));
+    }
 
     //// GET: JobTitles/Delete/5
     //public async Task<IActionResult> Delete(Guid? id)

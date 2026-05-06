@@ -8,6 +8,10 @@ public class EditCompanyViewModelValidator : AbstractValidator<EditCompanyViewMo
 {
     public EditCompanyViewModelValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("o Id é obrigatório.");
+
         RuleFor(x => x.DocumentNumber)
             .NotEmpty().WithMessage("O CNPJ é obrigatório.")
             .Must(DocumentValidator.IsCnpjValid).WithMessage("CNPJ Inválido.");

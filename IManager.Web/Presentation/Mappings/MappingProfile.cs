@@ -42,6 +42,7 @@ public class MappingProfile : Profile
         CreateMap<Department, DepartmentHierarchyViewModel>().ReverseMap().MaxDepth(5);
 
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap().MaxDepth(5);
+        CreateMap<JobTitle, EditJobTitleModelView>().ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, IndexJobTitleModelView>()
             .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.Department.Company.Id))
             .ForMember(dest => dest.CompanyTradeName, opt => opt.MapFrom(src => src.Department.Company.TradeName))

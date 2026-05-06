@@ -14,7 +14,7 @@ public class EditDepartmentViewModelValidator : AbstractValidator<EditDepartment
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("A empresa é obrigatória.");
+            .WithMessage("o Id é obrigatório.");
 
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("O Nome do setor é obrigatorio.");
