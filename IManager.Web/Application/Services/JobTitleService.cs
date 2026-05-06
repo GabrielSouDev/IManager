@@ -39,6 +39,20 @@ public class JobTitleService : IJobTitleService
         return Result.Ok();
     }
 
+    public async Task<Result> SoftDeleteAsync(Guid id)
+    {
+        try
+        {
+            await _jobTitleRepository.SoftDeleteAsync(id);
+        }
+        catch (Exception)
+        {
+            return Result.Fail("Por favor, tente novamente.");
+        }
+
+        return Result.Ok();
+    }
+
     public async Task<DetailsJobTitleModelView> GetDetailsModelView(Guid id)
     {
         var entity = await _jobTitleRepository.GetByIdAsync(id, q => q.Include(j => j.Department).ThenInclude(d=>d.Company));
@@ -53,6 +67,13 @@ public class JobTitleService : IJobTitleService
         var emtity = await _jobTitleRepository.GetByIdAsync(id);
 
         return _mapper.Map<EditJobTitleModelView?>(emtity);
+    }
+
+    public async Task<JobTitleModelView?> GetModelViewByIdAsync(Guid id)
+    {
+        var entity = await _jobTitleRepository.GetByIdAsync(id);
+
+        return _mapper.Map<JobTitleModelView?>(entity);
     }
 
     public async Task<PagedResult<IndexJobTitleModelView>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize, Guid? companyId = null)

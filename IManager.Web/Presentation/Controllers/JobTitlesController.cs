@@ -102,8 +102,6 @@ public class JobTitlesController : Controller
     }
 
     // POST: JobTitles/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, EditJobTitleModelView model)
@@ -130,34 +128,37 @@ public class JobTitlesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    //// GET: JobTitles/Delete/5
-    //public async Task<IActionResult> Delete(Guid? id)
-    //{
-    //    if (id == null) return NotFound();
+    // GET: JobTitles/Delete/5
+    public async Task<IActionResult> Delete(Guid? id)
+    {
+        if (id == null) return NotFound();
 
-    //    var jobTitle = await _JobTitleRepository.GetByIdAsync(id.Value, q => q.Include(j => j.Department));
+        var jobTitle = await _jobTitleService.GetModelViewByIdAsync(id.Value);
 
-    //    if (jobTitle == null) return NotFound();
+        if (jobTitle == null) return NotFound();
 
-    //    return View(jobTitle);
-    //}
+        return View(jobTitle);
+    }
 
-    //// POST: JobTitles/Delete/5
-    //[HttpPost, ActionName("Delete")]
-    //[ValidateAntiForgeryToken]
-    //public async Task<IActionResult> DeleteConfirmed(Guid id)
-    //{
-    //    var jobTitle = await _JobTitleRepository.GetByIdAsync(id);
-    //    if (jobTitle != null)
-    //        await _JobTitleRepository.SoftDeleteAsync(jobTitle);
+    // POST: JobTitles/Delete/5
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    {
+        if (Guid.Empty == id)
+            return NotFound();
 
-    //    return RedirectToAction(nameof(Index));
-    //}
+        Result result = await _jobTitleService.SoftDeleteAsync(id);
 
-    //private async Task<bool> JobTitleExistsAsync(Guid id)
-    //{
-    //    return await _JobTitleRepository.ExistsAsync(j => j.Id == id);
-    //}
+        if (!result.Succeeded)
+        {
+            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar a atualização: {string.Join(", ", result.Errors)}.";
+            return NotFound();
+        }
+
+        TempData[ToastMessages.Success] = "Cargo excluído com sucesso!";
+        return RedirectToAction(nameof(Index));
+    }
 
     #region Helpers
     private async Task AddViewBagHierarchyViewModel(CreateJobTitleModelView model)
