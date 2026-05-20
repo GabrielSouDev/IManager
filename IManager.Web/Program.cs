@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Serilog;
 using System.Globalization;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews(options =>
 {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 }).AddRazorRuntimeCompilation();
 
 builder.Services.Configure<RazorViewEngineOptions>(options =>
