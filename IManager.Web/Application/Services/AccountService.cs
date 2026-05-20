@@ -211,17 +211,17 @@ public class AccountService : IAccountService
         try
         {
             var user = await GetByIdAsync(id.ToString());
-            var userProfile = await _userProfileRepository.GetByIdAsync(user.Id);
+            if(user == null) throw new ArgumentException("Usuário não encontrado.");
 
-            if (user is null || userProfile is null)
-                return Result.Fail("Usuário não encontrado.");
+            var userProfile = await _userProfileRepository.GetByIdAsync(user.Id);
+            if (user is null || userProfile is null) throw new ArgumentException("Usuário não encontrado.");
 
             if (user.PhoneNumber != model.PhoneNumber)
             {
                 var result = await UpdatePhoneNumberAsync(user, model);
 
                 if (!result.Succeeded)
-                    return Result.Fail("Erro ao atualizar usuário.");
+                    throw new Exception("Falha ao atualizar telefone de usuário.");
             }
 
             await UpdateUserProfileInfos(userProfile, model);
@@ -230,8 +230,8 @@ public class AccountService : IAccountService
             {
                 var result = await UpdateEmailAsync(user, model);
 
-                if(!result.Succeeded)
-                    return Result.Fail("Falha ao atualizar e-mail.");
+                if (!result.Succeeded)
+                    throw new Exception("Falha ao atualizar e-mail.");
             }
 
             var updateClaimsResult = await UpdateUserClaims(user, userProfile, model);
@@ -241,10 +241,10 @@ public class AccountService : IAccountService
             await _unitOfWork.CommitAsync();
             return Result.Ok();
         }
-        catch
+        catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync();
-            return Result.Fail("Erro ao atualizar perfil. Tente novamente.");
+            return Result.Fail(ex.Message);
         }
     }
     #endregion
@@ -282,7 +282,7 @@ public class AccountService : IAccountService
         catch (Exception)
         {
             await _unitOfWork.RollbackAsync();
-            return Result.Fail("Falha ao atualizar usuario, por favor tente novamente.");
+            return Result.Fail("Falha ao atualizar Usuario. Por favor tente novamente.");
         }
         return Result.Ok();
     }
@@ -396,16 +396,18 @@ public class AccountService : IAccountService
         return pagedViewModel;
     }
 
-    public async Task<EditAccountViewModel> GetEditAccountViewModelByIdAsync(Guid id)
+    public async Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id)
     {
         var userProfile = await _userProfileRepository.GetByIdAsync(id, q => q
                                           .Include(u => u.JobTitle)
                                           .ThenInclude(j => j.Department)
                                           .ThenInclude(d => d.Company));
+        if (userProfile == null) return null;
 
         var editAccountCiewModel = _mapper.Map<EditAccountViewModel>(userProfile);
 
         var user = await GetByIdAsync(id.ToString());
+        if (user == null) return null;
 
         editAccountCiewModel.Email = user!.Email!;
         editAccountCiewModel.PhoneNumber = user!.PhoneNumber!;
@@ -413,12 +415,13 @@ public class AccountService : IAccountService
         return editAccountCiewModel;
     }
 
-    public async Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByIdAsync(Guid id)
+    public async Task<AccountDetailsViewModel?> GetDetailsViewModelByIdAsync(Guid id)
     {
-        var user = await GetByIdAsync(id.ToString()) ?? throw new ArgumentException("Usuário não encontrado!");
+        var user = await GetByIdAsync(id.ToString());
+        if (user == null) return null;
 
-        var userProfile = await _userProfileRepository.GetByIdAsync(user.Id, q => q.Include(u => u.JobTitle))
-            ?? throw new ArgumentException("Usuário não encontrado!");
+        var userProfile = await _userProfileRepository.GetByIdAsync(user.Id, q => q.Include(u => u.JobTitle));
+        if (userProfile == null) return null;
 
         return _mapper.Map<AccountDetailsViewModel>(userProfile);
     }

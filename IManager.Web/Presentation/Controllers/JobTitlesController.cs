@@ -1,15 +1,9 @@
 ﻿using IManager.Web.Application.Interfaces;
-using IManager.Web.Application.Services;
 using IManager.Web.Domain.Consts;
-using IManager.Web.Domain.Entities.Companies;
-using IManager.Web.Domain.Interfaces.Repositories;
-using IManager.Web.Presentation.ViewModels.Account;
-using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Presentation.ViewModels.JobTitles;
-using IManager.Web.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Result = IManager.Web.Shared.Result;
 
 namespace IManager.Web.Presentation.Controllers;
 
@@ -49,7 +43,7 @@ public class JobTitlesController : Controller
     {
         if (id == null) return NotFound();
 
-        DetailsJobTitleModelView model = await _jobTitleService.GetDetailsModelView(id.Value);
+        var model = await _jobTitleService.GetDetailsModelViewById(id.Value);
         if (model == null) return NotFound();
 
         return View(model);
@@ -59,14 +53,13 @@ public class JobTitlesController : Controller
     public async Task<IActionResult> Create()
     {
         var model = new CreateJobTitleModelView();
-
         await AddViewBagHierarchyViewModel(model);
+
         return View(model);
     }
 
     // POST: JobTitles/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateJobTitleModelView model)
     {
         if (!ModelState.IsValid)
@@ -75,12 +68,12 @@ public class JobTitlesController : Controller
             return View(model);
         }
 
-        Result result = await _jobTitleService.AddJobTitle(model);
+        Result result = await _jobTitleService.CreateAsync(model);
 
         if(!result.Succeeded)
         {
             await AddViewBagHierarchyViewModel(model);
-            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar o cadastro: {string.Join(", ", result.Errors)}.";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
             return View(model);
         }
 
@@ -95,7 +88,6 @@ public class JobTitlesController : Controller
         if (id == null) return NotFound();
 
         var jobTitle = await _jobTitleService.GetEditModelViewByIdAsync(id.Value);
-
         if (jobTitle == null) return NotFound();
 
         return View(jobTitle);
@@ -103,24 +95,17 @@ public class JobTitlesController : Controller
 
     // POST: JobTitles/Edit/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, EditJobTitleModelView model)
     {
-        if (id != model.Id)
-        {
-            return NotFound();
-        }
+        if (id != model.Id) return NotFound();
 
-        if (!ModelState.IsValid)
-        {
-            return View(model);
-        }
+        if (!ModelState.IsValid) return View(model);
 
-        Result result = await _jobTitleService.UpdateAsync(model);
-
+        var result = await _jobTitleService.UpdateAsync(model);
+        
         if(!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar a atualização: {string.Join(", ", result.Errors)}.";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
             return View(model);
         }
 
@@ -134,7 +119,6 @@ public class JobTitlesController : Controller
         if (id == null) return NotFound();
 
         var jobTitle = await _jobTitleService.GetModelViewByIdAsync(id.Value);
-
         if (jobTitle == null) return NotFound();
 
         return View(jobTitle);
@@ -142,21 +126,18 @@ public class JobTitlesController : Controller
 
     // POST: JobTitles/Delete/5
     [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        if (Guid.Empty == id)
-            return NotFound();
+        if (id == Guid.Empty) return NotFound();
 
-        Result result = await _jobTitleService.SoftDeleteAsync(id);
-
+        var result = await _jobTitleService.SoftDeleteAsync(id);
         if (!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Ocorreu um erro ao realizar a atualização: {string.Join(", ", result.Errors)}.";
-            return NotFound();
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
+            return RedirectToAction(nameof(Index));
         }
 
-        TempData[ToastMessages.Success] = "Cargo excluído com sucesso!";
+        TempData[ToastMessages.Success] = "Cargo atualizado com sucesso!";
         return RedirectToAction(nameof(Index));
     }
 

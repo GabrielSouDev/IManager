@@ -28,16 +28,10 @@ public class CompaniesController : Controller
     // GET: Companies/Details/5
     public async Task<IActionResult> Details(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
-        CompanyViewModel model = await _companyService.GetViewModelByIdAsync(id.Value);
-        if (model == null)
-        {
-            return NotFound();
-        }
+        var model = await _companyService.GetDetailsViewModelByIdAsync(id.Value);
+        if (model == null) return NotFound();
 
         return View(model);
     }
@@ -50,18 +44,15 @@ public class CompaniesController : Controller
 
     // POST: Companies/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateCompanyViewModel company)
     {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid) return View(company);
+
+        Result result = await _companyService.CreateAsync(company);
+
+        if (!result.Succeeded)
         {
-            return View(company);
-        }
-
-        Result result = await _companyService.AddAsync(company);
-
-        if (!result.Succeeded){
-            TempData[ToastMessages.Error] = $"Erro em criar Empresa: {string.Join(", ",result.Errors)}";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ",result.Errors)}";
             return View(company);
         }
 
@@ -82,25 +73,20 @@ public class CompaniesController : Controller
 
     // POST: Companies/Edit/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, EditCompanyViewModel company)
     {
         if (id != company.Id) return NotFound();
 
-        if (!ModelState.IsValid)
-        {
-            return View(company);
-        }
+        if (!ModelState.IsValid) return View(company);
         
         var result = await _companyService.UpdateAsync(id, company);
         if (!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Erro ao atualizar Empresa: {string.Join(", ", result.Errors)}";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}";
             return View(company);
         }
 
         TempData[ToastMessages.Success] = "Empresa atualizada com sucesso!";
-
         return RedirectToAction(nameof(Index));
         
     }
@@ -108,34 +94,25 @@ public class CompaniesController : Controller
     // GET: Companies/Delete/5
     public async Task<IActionResult> Delete(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
-        CompanyViewModel model = await _companyService.GetViewModelByIdAsync(id.Value);
-        if (model == null)
-        {
-            return NotFound();
-        }
+        var model = await _companyService.GetViewModelByIdAsync(id.Value);
+        if (model == null) return NotFound();
 
         return View(model);
     }
 
     // POST: Companies/Delete/5
     [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        if (id == Guid.Empty)
-        {
-            return NotFound();
-        }
-        Result result = await _companyService.SoftDeleteAsync(id);
+        if (id == Guid.Empty) return NotFound();
+
+        var result = await _companyService.SoftDeleteAsync(id);
         if(!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Erro ao desativar empresa: {string.Join(", ", result.Errors)}";
-            return NotFound();
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}";
+            return RedirectToAction(nameof(Index));
         }
 
         TempData[ToastMessages.Success] = "Empresa atualizada com sucesso!";

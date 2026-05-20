@@ -25,8 +25,19 @@ public class DepartmentService : IDepartmentService
 
     public async Task<DepartmentViewModel?> GetViewModelByIdAsync(Guid id)
     {
-        var department = await _departmentRepository.GetByIdAsync(id, q => q.Include(d => d.Company));
-        var model = _mapper.Map<DepartmentViewModel?>(department);
+        var entity = await _departmentRepository.GetByIdAsync(id, q => q.Include(d => d.Company));
+        if (entity == null) return null;
+
+        var model = _mapper.Map<DepartmentViewModel>(entity);
+        return model;
+    }
+
+    public async Task<DetailsDepartmentViewModel?> GetDetailsViewModelByIdAsync(Guid id)
+    {
+        var entity = await _departmentRepository.GetByIdAsync(id, q => q.Include(d => d.Company));
+        if (entity == null) return null;
+
+        var model = _mapper.Map<DetailsDepartmentViewModel>(entity);
         return model;
     }
 
@@ -99,7 +110,7 @@ public class DepartmentService : IDepartmentService
         return pagedViewModel;
     }
 
-    public async Task<Result> AddAsync(CreateDepartmentViewModel department)
+    public async Task<Result> CreateAsync(CreateDepartmentViewModel department)
     {
         if(string.IsNullOrEmpty(department.Name))
             return Result.Fail("O nome do setor vazio.");
@@ -116,15 +127,16 @@ public class DepartmentService : IDepartmentService
         }
         catch (Exception)
         {
-            return Result.Fail("Falha ao criar Setor, por favor tente novamente.");
+            return Result.Fail("Não foi possivel cadastrar Setor. Por favor, tente novamente.");
         }
 
         return Result.Ok();
     }
 
-    public async Task<EditDepartmentViewModel> GetEditViewModelByIdAsync(Guid value)
+    public async Task<EditDepartmentViewModel?> GetEditViewModelByIdAsync(Guid value)
     {
         var entity = await _departmentRepository.GetByIdAsync(value);
+        if (entity == null) return null;
 
         return _mapper.Map<EditDepartmentViewModel>(entity);
     }
@@ -132,8 +144,7 @@ public class DepartmentService : IDepartmentService
     public async Task<Result> UpdateAsync(EditDepartmentViewModel department)
     {
         var entity = await _departmentRepository.GetByIdAsync(department.Id);
-        if(entity is null)
-            return Result.Fail("Setor não encontrado.");
+        if(entity is null) return Result.Fail("Setor não encontrado.");
 
         _mapper.Map(department, entity);
 
@@ -151,10 +162,10 @@ public class DepartmentService : IDepartmentService
 
     public async Task<Result> SoftDeleteAsync(Guid id)
     {
-        var exists = await _departmentRepository.ExistsAsync(d => d.Id == id);
+        if (id == Guid.Empty) return Result.Fail("Setor não encontrado.");
 
-        if (!exists)
-            return Result.Fail("Setor não encontrado.");
+        var exists = await _departmentRepository.ExistsAsync(d => d.Id == id);
+        if (!exists) return Result.Fail("Setor não encontrado.");
 
         try
         {

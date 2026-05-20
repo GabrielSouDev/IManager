@@ -27,7 +27,7 @@ public class CompanyService : ICompanyService
         _companyRepository = companyRepository;
     }
 
-    public async Task<Result> AddAsync(CreateCompanyViewModel company)
+    public async Task<Result> CreateAsync(CreateCompanyViewModel company)
     {
         var exists = await _companyRepository.ExistsAsync(c=>c.DocumentNumber == company.DocumentNumber);
 
@@ -41,8 +41,7 @@ public class CompanyService : ICompanyService
         }
         catch (Exception ex)
         {
-
-            return Result.Fail(ex.Message);
+            return Result.Fail("Não foi possivel cadastrar empresa. Por favor, tente novamente.");
         }
 
         return Result.Ok();
@@ -50,27 +49,28 @@ public class CompanyService : ICompanyService
 
     public async Task<Result> SoftDeleteAsync(Guid id)
     {
-        if (id == Guid.Empty) return Result.Fail("Empresa não localizada.");
+        if (id == Guid.Empty) return Result.Fail("Empresa não encontrado.");
 
         var exists = await _companyRepository.ExistsAsync(c => c.Id == id);
-
-        if(!exists) return Result.Fail("Empresa não localizada.");
+        if(!exists) return Result.Fail("Empresa não encontrado.");
 
         try
         {
             await _companyRepository.SoftDeleteAsync(id);
-            return Result.Ok();
         }
         catch (Exception)
         {
-            return Result.Fail("Falha ao desativar empresa.");
+            return Result.Fail("Falha ao atualizar Empresa. Por favor, tente novamente.");
         }
+
+        return Result.Ok();
     }
 
     public async Task<IEnumerable<CompanyHierarchyViewModel>> GetCompaniesHierarchyViewModelAsync()
     {
         var companies = await _companyRepository.GetAllAsync(q => q.Include(c => c.Departments)
                                                                    .ThenInclude(d => d.JobTitles));
+        if (!companies.Any()) return Enumerable.Empty<CompanyHierarchyViewModel>();
 
         var companiesHierarchy = _mapper.Map<IEnumerable<CompanyHierarchyViewModel>>(companies);
         return companiesHierarchy;
@@ -141,27 +141,38 @@ public class CompanyService : ICompanyService
         return model;
     }
 
+    public async Task<DetailsCompanyViewModel?> GetDetailsViewModelByIdAsync(Guid id)
+    {
+        var entity = await _companyRepository.GetByIdAsync(id);
+        if (entity == null) return null;
+
+        var model = _mapper.Map<DetailsCompanyViewModel>(entity);
+        return model;
+    }
+
     public async Task<Result> UpdateAsync(Guid id,EditCompanyViewModel company)
     {
         try
         {
             var entity = await _companyRepository.GetByIdAsync(id);
-            if (entity is null && company.Id != id) Result.Fail("Empresa não encontrada.");
+            if (entity == null && company.Id != id) Result.Fail("Empresa não encontrada.");
 
             _mapper.Map(company, entity);
             await _companyRepository.UpdateAsync(entity!);
-            return Result.Ok();
         }
         catch (Exception)
         {
-            return Result.Fail("Erro ao atualizar empresa.");
+            return Result.Fail("Falha ao atualizar a Empresa. Por favor, tente novamente.");
         }
+        return Result.Ok();
     }
 
-    public async Task<IEnumerable<CompanyViewModel>?> GetCompaniesViewModelsAsync()
+    public async Task<IEnumerable<CompanyViewModel>> GetCompaniesViewModelsAsync()
     {
-        var departments = await _companyRepository.GetAllAsync();
+        var entities = await _companyRepository.GetAllAsync();
+        if (!entities.Any()) return Enumerable.Empty<CompanyViewModel>();
 
-        return _mapper.Map<IEnumerable<CompanyViewModel>>(departments) ?? new List<CompanyViewModel>();
+        var viewModel = _mapper.Map<IEnumerable<CompanyViewModel>>(entities);
+        return viewModel;
     }
 }

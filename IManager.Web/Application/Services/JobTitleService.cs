@@ -23,7 +23,7 @@ public class JobTitleService : IJobTitleService
         _jobTitleRepository = jobTitleRepository;
     }
 
-    public async Task<Result> AddJobTitle(CreateJobTitleModelView model)
+    public async Task<Result> CreateAsync(CreateJobTitleModelView model)
     {
         var entity = _mapper.Map<JobTitle>(model);
 
@@ -31,9 +31,9 @@ public class JobTitleService : IJobTitleService
         {
             await _jobTitleRepository.AddAsync(entity);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return Result.Fail("Por favor, tente novamente.");
+            return Result.Fail("Não foi possivel cadastrar Cargo. Por favor, tente novamente.");
         }
 
         return Result.Ok();
@@ -41,32 +41,39 @@ public class JobTitleService : IJobTitleService
 
     public async Task<Result> SoftDeleteAsync(Guid id)
     {
+        if (id == Guid.Empty) return Result.Fail("Cargo não encontrado.");
+
+        var exists = await _jobTitleRepository.ExistsAsync(c => c.Id == id);
+        if (!exists) return Result.Fail("Cargo não encontrado.");
+
         try
         {
             await _jobTitleRepository.SoftDeleteAsync(id);
         }
         catch (Exception)
         {
-            return Result.Fail("Por favor, tente novamente.");
+            return Result.Fail("Falha ao atualizar Cargo. Por favor, tente novamente.");
         }
 
         return Result.Ok();
     }
 
-    public async Task<DetailsJobTitleModelView> GetDetailsModelView(Guid id)
+    public async Task<DetailsJobTitleModelView?> GetDetailsModelViewById(Guid id)
     {
         var entity = await _jobTitleRepository.GetByIdAsync(id, q => q.Include(j => j.Department).ThenInclude(d=>d.Company));
+        if (entity == null) return null;
 
-        var model = _mapper.Map<DetailsJobTitleModelView?>(entity);
+        var model = _mapper.Map<DetailsJobTitleModelView>(entity);
 
-        return model ?? new();
+        return model;
     }
 
     public async Task<EditJobTitleModelView?> GetEditModelViewByIdAsync(Guid id)
     {
-        var emtity = await _jobTitleRepository.GetByIdAsync(id);
+        var entity = await _jobTitleRepository.GetByIdAsync(id);
+        if (entity == null) return null;
 
-        return _mapper.Map<EditJobTitleModelView?>(emtity);
+        return _mapper.Map<EditJobTitleModelView?>(entity);
     }
 
     public async Task<JobTitleModelView?> GetModelViewByIdAsync(Guid id)
@@ -137,6 +144,7 @@ public class JobTitleService : IJobTitleService
     public async Task<Result> UpdateAsync(EditJobTitleModelView model)
     {
         var entity = await _jobTitleRepository.GetByIdAsync(model.Id);
+        if (entity == null) throw new ArgumentException("Erro ao atualizar dados de cargo.");
 
         _mapper.Map(model, entity);
 
@@ -146,7 +154,7 @@ public class JobTitleService : IJobTitleService
         }
         catch (Exception)
         {
-            return Result.Fail("Por favor, tente novamente.");
+            return Result.Fail("Falha ao atualizar Cargo. Por favor, tente novamente.");
         }
 
         return Result.Ok();

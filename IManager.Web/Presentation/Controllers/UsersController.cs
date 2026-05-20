@@ -23,7 +23,9 @@ public class UsersController : Controller
     {
         PagedResult<AccountViewModel> model;
         if (User.IsInRole(Role.Staff))
+        {
             model = await _accountService.GetPagedAsync(page, pageSize, active, search: search);
+        }
         else
         {
             var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
@@ -36,16 +38,10 @@ public class UsersController : Controller
     // GET: Users/Details/5
     public async Task<IActionResult> Details(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
-        var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
-        if (userProfile == null)
-        {
-            return NotFound();
-        }
+        var userProfile = await _accountService.GetDetailsViewModelByIdAsync(id.Value);
+        if (userProfile == null) return NotFound();
 
         return View(userProfile);
     }
@@ -56,78 +52,71 @@ public class UsersController : Controller
         if (id == null) return NotFound();
         
         var model = await _accountService.GetEditAccountViewModelByIdAsync(id.Value);
-
         if (model == null) return NotFound();
 
-        ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+        await AddDepartmentsHierarchyViewBagAsync(model.CompanyId);
+
         return View(model);
     }
 
     // POST: Users/Edit/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, EditAccountViewModel model)
     {
-        if (id != model.Id)
-        {
-            return NotFound();
-        }
+        if (id != model.Id) return NotFound();
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
+            await AddDepartmentsHierarchyViewBagAsync(model.CompanyId);
             return View(model);
         }
 
         var result = await _accountService.EditAccountAsync(id, model);
-            
-        if (result.Succeeded)
+        if (!result.Succeeded)
         {
-            TempData[ToastMessages.Success] = "Dados atualizados com sucesso!";
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error);
 
-            return RedirectToAction("Details", new {id});
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
+            await AddDepartmentsHierarchyViewBagAsync(model.CompanyId);
+            return View(model);
         }
 
-        foreach (var error in result.Errors)
-            ModelState.AddModelError("", error);
+        TempData[ToastMessages.Success] = "Dados atualizados com sucesso!";
 
-                        ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(model.CompanyId);
-        return View(model);
+        return RedirectToAction("Details", new { id });
     }
 
     // GET: Users/Delete/5
     public async Task<IActionResult> Delete(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
-        var userProfile = await _accountService.GetAccountDetailsViewModelByIdAsync(id.Value);
-        if (userProfile == null)
-        {
-            return NotFound();
-        }
+        var userProfile = await _accountService.GetDetailsViewModelByIdAsync(id.Value);
+        if (userProfile == null) return NotFound();
 
         return View(userProfile);
     }
 
     // POST: Users/Delete/5
     [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        var result = await _accountService.SoftDeleteAsync(id);
+        if (id == Guid.Empty) return NotFound();
 
+        var result = await _accountService.SoftDeleteAsync(id);
         if (!result.Succeeded)
         {
-            TempData["Error"] = result.Errors.FirstOrDefault()
-                ?? "Erro ao atualizar informação de usuário.";
-
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}";
             return RedirectToAction(nameof(Index));
         }
 
-        TempData["Success"] = "Usuário atualizado com sucesso!";
+        TempData[ToastMessages.Success] = "Usuário atualizado com sucesso!";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task AddDepartmentsHierarchyViewBagAsync(Guid CompanyId)
+    {
+        ViewBag.Departments = await _departmentService.GetDepartmentsHierarchyViewModelAsync(CompanyId);
     }
 }

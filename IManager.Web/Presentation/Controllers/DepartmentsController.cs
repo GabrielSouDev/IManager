@@ -39,15 +39,12 @@ public class DepartmentsController : Controller
     // GET: Departments/Details/5
     public async Task<IActionResult> Details(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
-        var department = await _departmentService.GetViewModelByIdAsync(id.Value);
-        if (department == null) return NotFound();
+        var model = await _departmentService.GetDetailsViewModelByIdAsync(id.Value);
+        if (model == null) return NotFound();
 
-        return View(department);
+        return View(model);
     }
 
     // GET: Departments/Create
@@ -55,11 +52,7 @@ public class DepartmentsController : Controller
     {
         var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
 
-        if (User.IsInRole(Role.Staff))
-        {
-            var companies = await _companyService.GetCompaniesViewModelsAsync();
-            ViewBag.Companies = companies;
-        }
+        await IfStaffAddViewBagViewModel();
 
         var model = new CreateDepartmentViewModel
         {
@@ -70,73 +63,51 @@ public class DepartmentsController : Controller
 
     // POST: Departments/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateDepartmentViewModel department)
     {
         if (!ModelState.IsValid)
         {
-            if (User.IsInRole(Role.Staff))
-            {
-                var companies = await _companyService.GetCompaniesViewModelsAsync();
-                ViewBag.Companies = companies;
-            }
+            await IfStaffAddViewBagViewModel();
             return View(department);
         }
 
-        Result result = await _departmentService.AddAsync(department);
+        Result result = await _departmentService.CreateAsync(department);
         
         if (!result.Succeeded)
         {
-            if (User.IsInRole(Role.Staff))
-            {
-                var companies = await _companyService.GetCompaniesViewModelsAsync();
-                ViewBag.Companies = companies;
-            }
-            TempData[ToastMessages.Error] = $"Falha ao cadastrar setor: {string.Join(", ", result.Errors)}.";
+            await IfStaffAddViewBagViewModel();
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
 
             return View(department);
         }
 
-        TempData[ToastMessages.Success] = "Setor criado com sucesso!";
+        TempData[ToastMessages.Success] = "Setor cadastrado com sucesso!";
         return RedirectToAction(nameof(Index));
     }
 
     // GET: Departments/Edit/5
     public async Task<IActionResult> Edit(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
         var department = await _departmentService.GetEditViewModelByIdAsync(id.Value);
-        if (department == null)
-        {
-            return NotFound();
-        }
+        if (department == null) return NotFound();
 
         return View(department);
     }
 
     // POST: Departments/Edit/5
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, EditDepartmentViewModel department)
     {
-        if (id != department.Id)
-        {
-            return NotFound();
-        }
+        if (id != department.Id) return NotFound();
 
-        if (!ModelState.IsValid)
-        {
-            return View(department);
-        }
+        if (!ModelState.IsValid) return View(department);
 
-        Result result = await _departmentService.UpdateAsync(department);
+        var result = await _departmentService.UpdateAsync(department);
         if(!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Erro ao editar setor: {string.Join(", ", result.Errors)}";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}";
             return View(department);
         }
 
@@ -147,34 +118,37 @@ public class DepartmentsController : Controller
     // GET: Departments/Delete/5
     public async Task<IActionResult> Delete(Guid? id)
     {
-        if (id == null)
-        {
-            return NotFound();
-        }
+        if (id == null) return NotFound();
 
         var model = await _departmentService.GetViewModelByIdAsync(id.Value);
-        if (model == null)
-        {
-            return NotFound();
-        }
+        if (model == null) return NotFound();
 
         return View(model);
     }
 
     // POST: Departments/Delete/5
     [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
+        if (id == Guid.Empty) return NotFound();
+
         Result result = await _departmentService.SoftDeleteAsync(id);
-        
         if(!result.Succeeded)
         {
-            TempData[ToastMessages.Error] = $"Falha ao desativar setor: {string.Join(", ", result.Errors)}.";
+            TempData[ToastMessages.Error] = $"Erro - {string.Join(", ", result.Errors)}.";
             return RedirectToAction(nameof(Index));
         }
 
-        TempData[ToastMessages.Success] = "Setor alterado com sucesso!";
+        TempData[ToastMessages.Success] = "Setor atualizado com sucesso!";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task IfStaffAddViewBagViewModel()
+    {
+        if (User.IsInRole(Role.Staff))
+        {
+            var companies = await _companyService.GetCompaniesViewModelsAsync();
+            ViewBag.Companies = companies;
+        }
     }
 }

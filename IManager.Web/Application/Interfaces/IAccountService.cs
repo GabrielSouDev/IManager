@@ -22,12 +22,12 @@ public interface IAccountService
     Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail);
     Task<Result> ConfirmChangeEmailAsync(string currentEmail, string newEmail, string token);
     Task SendChangeEmailLinkAsync(User user, string newEmail, string link); 
-    Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByIdAsync(Guid id);
+    Task<AccountDetailsViewModel?> GetDetailsViewModelByIdAsync(Guid id);
     Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByEmailAsync(string email);
     Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model);
     Task<Result> ChangePasswordAsync(string email, ChangePasswordViewModel model);
     Task<PagedResult<AccountViewModel>> GetPagedAsync(int page, int pageSize, ActiveFilter active, Guid? companyId = null, string? search = null);
-    Task<EditAccountViewModel> GetEditAccountViewModelByIdAsync(Guid id);
+    Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id);
     Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model);
     Task<Result> SoftDeleteAsync(Guid id);
 }
