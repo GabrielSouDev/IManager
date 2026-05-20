@@ -15,32 +15,58 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        MapSeeders();
+        MapUser();
+        MapCompany();
+        MapDepartment();
+        MapJobtitle();
+        MapTimeTracking();
+    }
+
+    private void MapSeeders()
+    {
+        CreateMap<UserSeedData, UserProfile>().ReverseMap().MaxDepth(5);
         CreateMap<CompanySeedData, Company>().ReverseMap().MaxDepth(5);
         CreateMap<DepartmentSeedData, Department>().ReverseMap().MaxDepth(5);
         CreateMap<JobTitleSeedData, JobTitle>().ReverseMap().MaxDepth(5);
+    }
 
+    private void MapUser()
+    {
         CreateMap<User, AccountDetailsViewModel>().ReverseMap().MaxDepth(5);
-        CreateMap<UserSeedData, UserProfile>().ReverseMap().MaxDepth(5);
         CreateMap<UserProfile, AccountViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<UserProfile, AccountDetailsViewModel>()
             .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.JobTitle.Name))
-            .ReverseMap();
+            .ReverseMap()
+            .MaxDepth(5);
         CreateMap<UserProfile, EditAccountViewModel>()
             .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.JobTitle.Department.Company.Id))
             .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.JobTitle.Department.Id))
-            .ForMember(dest => dest.JobTitleId, opt => opt.MapFrom(src => src.JobTitle.Id));
+            .ForMember(dest => dest.JobTitleId, opt => opt.MapFrom(src => src.JobTitle.Id))
+            .MaxDepth(5);
         CreateMap<UserProfile, RegisterViewModel>().ReverseMap().MaxDepth(5);
+    }
 
+    private void MapCompany()
+    {
         CreateMap<Company, CompanyViewModel>().ReverseMap().MaxDepth(5);
+        CreateMap<Company, DetailsCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, CreateCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, EditCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, CompanyHierarchyViewModel>().ReverseMap().MaxDepth(5);
+    }
 
+    private void MapDepartment()
+    {
         CreateMap<Department, DepartmentViewModel>().ReverseMap().MaxDepth(5);
+        CreateMap<Department, DetailsDepartmentViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Department, CreateDepartmentViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Department, EditDepartmentViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Department, DepartmentHierarchyViewModel>().ReverseMap().MaxDepth(5);
+    }
 
+    private void MapJobtitle()
+    {
         CreateMap<JobTitle, JobTitleModelView>().ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, EditJobTitleModelView>().ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, IndexJobTitleModelView>()
@@ -63,7 +89,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.Name))
             .ReverseMap().MaxDepth(5);
         CreateMap<JobTitle, JobTitleHierarchyModelView>().ReverseMap().MaxDepth(5);
+    }
 
+    private void MapTimeTracking()
+    {
         CreateMap<TimeEntry, TimeEntryDTO>().ReverseMap().MaxDepth(5);
         CreateMap<TimeCheck, TimeCheckDTO>().ReverseMap().MaxDepth(5);
     }
