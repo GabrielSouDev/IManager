@@ -4,6 +4,7 @@ public class DetailsJobTitleModelView
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public InfoJobTitleViewModel Info { get; set; } = new();
     public string DepartmentName { get; set; } = string.Empty;
     public string CompanyTradeName { get; set; } = string.Empty;
     public string CompanyDocumentNumber { get; set; } = string.Empty;

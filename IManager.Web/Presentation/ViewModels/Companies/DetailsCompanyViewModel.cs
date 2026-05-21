@@ -4,6 +4,7 @@ public class DetailsCompanyViewModel
 {
     public Guid Id { get; set; }
     public string DocumentNumber { get; set; } = string.Empty;
+    public InfoCompanyViewModel Info { get; set; } = new();
     public string LegalName { get; set; } = string.Empty;
     public string TradeName { get; set; } = string.Empty;
     public DateOnly FoundedAt { get; set; }

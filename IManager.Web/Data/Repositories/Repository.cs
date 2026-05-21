@@ -1,6 +1,5 @@
 ﻿using IManager.Web.Data.Persistence;
 using IManager.Web.Domain.Entities;
-using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Domain.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

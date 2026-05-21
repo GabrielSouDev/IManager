@@ -18,9 +18,9 @@ public class CompanyService : ICompanyService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IRepository<Company> _companyRepository;
+    private readonly ICompaniesRepository _companyRepository;
 
-    public CompanyService(IUnitOfWork unitOfWork, IMapper mapper, IRepository<Company> companyRepository)
+    public CompanyService(IUnitOfWork unitOfWork, IMapper mapper, ICompaniesRepository companyRepository)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;

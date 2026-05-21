@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IManager.Web.Application.Interfaces;
+using IManager.Web.Data.Repositories;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Domain.Interfaces.Persistence;
@@ -21,12 +22,12 @@ public class AccountService : IAccountService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailSender<User> _emailSender;
     private readonly IMapper _mapper;
-    private readonly IRepository<UserProfile> _userProfileRepository;
-    private readonly IRepository<JobTitle> _jobTitleRepository;
+    private readonly IUserProfilesRepository _userProfileRepository;
+    private readonly IJobTitlesRepository _jobTitleRepository;
 
     public AccountService(SignInManager<User> signInManager, UserManager<User> userManager, 
         IUnitOfWork unitOfWork, IEmailSender<User> emailSender, IMapper mapper, 
-        IRepository<UserProfile> userProfileRepository, IRepository<JobTitle> jobTitleRepository)
+        IUserProfilesRepository userProfileRepository, IJobTitlesRepository jobTitleRepository)
     {
         _signInManager = signInManager;
         _userManager = userManager;

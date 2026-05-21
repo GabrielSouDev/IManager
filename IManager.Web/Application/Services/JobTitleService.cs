@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IManager.Web.Application.Interfaces;
+using IManager.Web.Data.Repositories;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
@@ -14,9 +15,9 @@ public class JobTitleService : IJobTitleService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IRepository<JobTitle> _jobTitleRepository;
+    private readonly IJobTitlesRepository _jobTitleRepository;
 
-    public JobTitleService(IUnitOfWork unitOfWork, IMapper mapper, IRepository<JobTitle> jobTitleRepository)
+    public JobTitleService(IUnitOfWork unitOfWork, IMapper mapper, IJobTitlesRepository jobTitleRepository)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -64,6 +65,8 @@ public class JobTitleService : IJobTitleService
         if (entity == null) return null;
 
         var model = _mapper.Map<DetailsJobTitleModelView>(entity);
+        var info = await _jobTitleRepository.GetInfoByIdAsync(id);
+        model.Info = info;
 
         return model;
     }

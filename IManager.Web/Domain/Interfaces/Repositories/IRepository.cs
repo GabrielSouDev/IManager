@@ -1,5 +1,4 @@
-﻿using IManager.Web.Domain.Entities.Users;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 namespace IManager.Web.Domain.Interfaces.Repositories;
 
 public interface IRepository<T> where T : class

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using IManager.Web.Application.Interfaces;
+using IManager.Web.Data.Repositories;
 using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
@@ -15,8 +16,8 @@ public class DepartmentService : IDepartmentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly IRepository<Department> _departmentRepository;
-    public DepartmentService(IUnitOfWork unitOfWork, IMapper mapper, IRepository<Department> departmentRepository)
+    private readonly IDepartmentsRepository _departmentRepository;
+    public DepartmentService(IUnitOfWork unitOfWork, IMapper mapper, IDepartmentsRepository departmentRepository)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
