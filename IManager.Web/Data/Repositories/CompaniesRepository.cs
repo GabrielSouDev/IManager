@@ -12,13 +12,13 @@ public class CompaniesRepository : Repository<Company>, ICompaniesRepository
 
     public async Task<InfoCompanyViewModel?> GetInfoByIdAsync(Guid id)
     {
-        var exists = await ExistsAsync(id);
+        var exists = await ExistsAsync(c => c.Id == id);
         if (!exists) return null;
 
         var start = new DateTime(DateTime.UtcNow.Year, 1, 1);
         var end = start.AddYears(1);
 
-        var result = await _context.Companies
+        var result = await _dbSet
             .Where(c => c.Id == id)
             .Select(c => new InfoCompanyViewModel
             {
