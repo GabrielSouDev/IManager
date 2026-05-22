@@ -43,6 +43,11 @@ public class UsersController : Controller
         var userProfile = await _accountService.GetDetailsViewModelByIdAsync(id.Value);
         if (userProfile == null) return NotFound();
 
+        var infoViewModel = await _accountService.GetInfoViewModelAsync(id.Value);
+        if (infoViewModel == null) return BadRequest();
+        
+        ViewBag.UserInfo = infoViewModel;
+
         return View(userProfile);
     }
 

@@ -147,6 +147,10 @@ public class CompanyService : ICompanyService
         if (entity == null) return null;
 
         var model = _mapper.Map<DetailsCompanyViewModel>(entity);
+
+        var infoModel = await _companyRepository.GetInfoByIdAsync(id);
+        model.Info = infoModel;
+
         return model;
     }
 

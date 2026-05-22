@@ -513,5 +513,10 @@ public class AccountService : IAccountService
         }
         return Result.Ok();
     }
+
+    public async Task<InfoUserProfileViewModel?> GetInfoViewModelAsync(Guid id)
+    {
+        return  await _userProfileRepository.GetInfoByIdAsync(id);
+    }
     #endregion
 }

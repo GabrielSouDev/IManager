@@ -39,6 +39,9 @@ public class DepartmentService : IDepartmentService
         if (entity == null) return null;
 
         var model = _mapper.Map<DetailsDepartmentViewModel>(entity);
+        var infoModel = await _departmentRepository.GetInfoByIdAsync(id);
+        model.Info = infoModel;
+
         return model;
     }
 

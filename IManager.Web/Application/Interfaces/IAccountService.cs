@@ -30,4 +30,5 @@ public interface IAccountService
     Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id);
     Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model);
     Task<Result> SoftDeleteAsync(Guid id);
+    Task<InfoUserProfileViewModel?> GetInfoViewModelAsync(Guid id);
 }
