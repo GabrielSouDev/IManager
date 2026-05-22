@@ -7,6 +7,7 @@ using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
 using IManager.Web.Presentation.ViewModels.JobTitles;
+using IManager.Web.Presentation.ViewModels.Users;
 using IManager.Web.Shared.DTO.TimeTrackings;
 
 namespace IManager.Web.Presentation.Mappings;
@@ -35,6 +36,18 @@ public class MappingProfile : Profile
     {
         CreateMap<User, AccountDetailsViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<UserProfile, AccountViewModel>().ReverseMap().MaxDepth(5);
+        CreateMap<UserProfile, IndexUserViewModel>().ReverseMap().MaxDepth(5);
+        CreateMap<User, DetailsUserViewModel>()
+            .ReverseMap()
+            .MaxDepth(5);
+        CreateMap<UserProfile, DetailsUserViewModel>()
+            .ReverseMap()
+            .MaxDepth(5);
+        CreateMap<UserProfile, EditAccountViewModel>()
+            .ForMember(dest => dest.CompanyId, opt => opt.MapFrom(src => src.JobTitle.Department.Company.Id))
+            .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.JobTitle.Department.Id))
+            .ForMember(dest => dest.JobTitleId, opt => opt.MapFrom(src => src.JobTitle.Id))
+            .MaxDepth(5);
         CreateMap<UserProfile, AccountDetailsViewModel>()
             .ForMember(dest => dest.JobTitle, opt => opt.MapFrom(src => src.JobTitle.Name))
             .ReverseMap()

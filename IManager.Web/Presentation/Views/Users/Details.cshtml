@@ -1,50 +1,141 @@
-﻿@using IManager.Web.Shared.Helpers
-@model AccountDetailsViewModel
+﻿@model DetailsUserViewModel
 
 @{
-    ViewData["Title"] = "Details";
-
-    var userInfo = ViewBag.UserInfo as InfoUserProfileViewModel;
+    ViewData["Title"] = "Detalhes do Usuário";
 }
 
-<h1>Details</h1>
+<h1>Detalhes do Usuário</h1>
 
 <div>
-    <h4>UserProfile</h4>
+    <h4>Dados Pessoais</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
+        <dt class="col-sm-3">
+            Nome Completo
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-9">
             @Html.DisplayFor(model => model.FullName)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DocumentNumber)
+
+        <dt class="col-sm-3">
+            CPF
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-9">
             @MaskHelper.MaskCpf(Model.DocumentNumber)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BirthDate)
+
+        <dt class="col-sm-3">
+            Data de Nascimento
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-9">
             @Html.DisplayFor(model => model.BirthDate)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.JobTitle)
+
+        <dt class="col-sm-3">
+            E-mail
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.JobTitle)
+        <dd class="col-sm-9">
+            @Model.Email
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.BaseSalary)
+
+        <dt class="col-sm-3">
+            Telefone
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-9">
+            @Model.PhoneNumber
+        </dd>
+
+        <dt class="col-sm-3">
+            Perfil
+        </dt>
+        <dd class="col-sm-9">
+            @Model.Role
+        </dd>
+
+        <dt class="col-sm-3">
+            Ativo
+        </dt>
+        <dd class="col-sm-9">
+            @(Model.IsActive ? "Sim" : "Não")
+        </dd>
+    </dl>
+</div>
+
+<div>
+    <h4>Informações Profissionais</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            Empresa
+        </dt>
+        <dd class="col-sm-9">
+            @Model.Info.CompanyTradeName
+        </dd>
+
+        <dt class="col-sm-3">
+            CNPJ da Empresa
+        </dt>
+        <dd class="col-sm-9">
+            @MaskHelper.MaskCnpj(Model.Info.CompanyDocumentNumber)
+        </dd>
+
+        <dt class="col-sm-3">
+            Departamento
+        </dt>
+        <dd class="col-sm-9">
+            @Model.Info.Department
+        </dd>
+
+        <dt class="col-sm-3">
+            Cargo
+        </dt>
+        <dd class="col-sm-9">
+            @Model.Info.JobTitle
+        </dd>
+
+        <dt class="col-sm-3">
+            Salário Base
+        </dt>
+        <dd class="col-sm-9">
             @MaskHelper.MaskCurrency(Model.BaseSalary)
         </dd>
     </dl>
 </div>
+
+<div>
+    <h4>Indicadores Salariais (Último Ano)</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-3">
+            Salário Líquido Anual
+        </dt>
+        <dd class="col-sm-9">
+            @MaskHelper.MaskCurrency(Model.Info.LastAnnualNetSalary)
+        </dd>
+
+        <dt class="col-sm-3">
+            Salário Bruto Anual
+        </dt>
+        <dd class="col-sm-9">
+            @MaskHelper.MaskCurrency(Model.Info.LastAnnualGrossSalary)
+        </dd>
+
+        <dt class="col-sm-3">
+            Média Salarial Líquida
+        </dt>
+        <dd class="col-sm-9">
+            @MaskHelper.MaskCurrency(Model.Info.AverageNetSalary)
+        </dd>
+
+        <dt class="col-sm-3">
+            Média Salarial Bruta
+        </dt>
+        <dd class="col-sm-9">
+            @MaskHelper.MaskCurrency(Model.Info.AverageGrossSalary)
+        </dd>
+    </dl>
+</div>
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>

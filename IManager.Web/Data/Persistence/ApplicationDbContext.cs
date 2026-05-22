@@ -193,9 +193,9 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             entity.Property(e => e.OtherDeductions).HasColumnType("decimal(18,2)");
 
             // propriedades calculadas são ignoradas pelo EF
-            entity.Ignore(e => e.TotalEarnings);
-            entity.Ignore(e => e.TotalDeductions);
-            entity.Ignore(e => e.NetSalary);
+            //entity.Ignore(e => e.TotalEarnings);
+            //entity.Ignore(e => e.TotalDeductions);
+            //entity.Ignore(e => e.NetSalary);
         });
     }
     #endregion

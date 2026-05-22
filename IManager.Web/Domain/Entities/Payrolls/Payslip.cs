@@ -11,13 +11,9 @@ public class Payslip : BaseEntity
     public UserProfile Employee { get; set; } = null!;
 
     public decimal GrossSalary { get; set; } = 0m;
-    public decimal TotalEarnings => GrossSalary
-                                    + OvertimeAdditionals
-                                    + HazardPay
-                                    + UnhealthyPay
-                                    + Commission;
-    public decimal TotalDeductions => INSSDeduction + IRRFDeduction + OtherDeductions;
-    public decimal NetSalary => TotalEarnings - TotalDeductions;
+    public decimal TotalEarnings { get; set; }//=> GrossSalary + OvertimeAdditionals + HazardPay + UnhealthyPay + Commission;
+    public decimal TotalDeductions { get; set; }//=> INSSDeduction + IRRFDeduction + OtherDeductions;
+    public decimal NetSalary { get; set; }//=> TotalEarnings - TotalDeductions;
 
     public decimal OvertimeAdditionals { get; set; } = 0m;
     public decimal HazardPay { get; set; } = 0m;

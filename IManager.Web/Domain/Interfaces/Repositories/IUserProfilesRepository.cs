@@ -1,5 +1,5 @@
 ﻿using IManager.Web.Domain.Entities.Users;
-using IManager.Web.Presentation.ViewModels.Account;
+using IManager.Web.Presentation.ViewModels.Users;
 
 namespace IManager.Web.Domain.Interfaces.Repositories;
 

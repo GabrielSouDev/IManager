@@ -12,10 +12,7 @@ public class JobTitlesRepository : Repository<JobTitle>, IJobTitlesRepository
 
     public async Task<InfoJobTitleViewModel?> GetInfoByIdAsync(Guid id)
     {
-        var exists = await ExistsAsync(j => j.Id == id);
-        if (!exists) return null;
-
-        var start = new DateTime(DateTime.UtcNow.Year, 1, 1);
+        var start = new DateTime(DateTime.UtcNow.Year, 1, 1, 0, 0, 0, kind: DateTimeKind.Utc);
         var end = start.AddYears(1);
 
         var result = await _dbSet

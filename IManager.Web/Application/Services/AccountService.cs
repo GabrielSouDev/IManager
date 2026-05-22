@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using IManager.Web.Application.Interfaces;
-using IManager.Web.Data.Repositories;
-using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Entities.Users;
 using IManager.Web.Domain.Interfaces.Persistence;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Account;
+using IManager.Web.Presentation.ViewModels.Users;
 using IManager.Web.Shared;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -205,6 +204,25 @@ public class AccountService : IAccountService
     #endregion
 
     #region Editar User
+    public async Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id)
+    {
+        var userProfile = await _userProfileRepository.GetByIdAsync(id, q => q
+                                          .Include(u => u.JobTitle)
+                                          .ThenInclude(j => j.Department)
+                                          .ThenInclude(d => d.Company));
+        if (userProfile == null) return null;
+
+        var editAccountCiewModel = _mapper.Map<EditAccountViewModel>(userProfile);
+
+        var user = await GetByIdAsync(id.ToString());
+        if (user == null) return null;
+
+        editAccountCiewModel.Email = user!.Email!;
+        editAccountCiewModel.PhoneNumber = user!.PhoneNumber!;
+
+        return editAccountCiewModel;
+    }
+
     public async Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model)
     {
         await _unitOfWork.BeginTransactionAsync();
@@ -338,84 +356,6 @@ public class AccountService : IAccountService
     public async Task<User?> GetByIdAsync(string userId)
     => await _userManager.FindByIdAsync(userId);
 
-    public async Task<PagedResult<AccountViewModel>> GetPagedAsync( 
-            int page, int pageSize, ActiveFilter active, Guid ? companyId = null, string? search = null)
-    {
-        Func<IQueryable<UserProfile>, IQueryable<UserProfile>> query = q =>
-        {
-            q = q
-                .Include(u => u.JobTitle)
-                .ThenInclude(j => j.Department)
-                .ThenInclude(d => d.Company);
-
-            if (companyId.HasValue)
-            {
-                q = q.Where(u => u.CompanyId == companyId);
-            }
-
-            switch(active)
-            {
-                case ActiveFilter.Active:
-                    q = q.Where(u => u.IsActive);
-                    break;
-                case ActiveFilter.Inactive:
-                    q = q.Where(u => !u.IsActive);
-                    break;
-                default:
-                    break;
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                search = search.ToLower();
-                q = q.Where(u =>
-                    EF.Functions.Like(u.FullName.ToLower(), $"%{search}%") ||
-                    EF.Functions.Like(u.DocumentNumber.ToLower(), $"%{search}%") ||
-                    EF.Functions.Like(u.Company.TradeName.ToLower(), $"%{search}%") ||
-                    EF.Functions.Like(u.JobTitle.Name.ToLower(), $"%{search}%") ||
-                    EF.Functions.Like(u.Role.ToLower(), $"%{search}%")
-                );
-            }
-            return q;
-        };
-
-        var totalCount = await _userProfileRepository.CountAsync(query);
-
-        IEnumerable<UserProfile> userProfiles = await _userProfileRepository.GetAllAsync(query, page, pageSize);
-        var accountsDetailsViewModel = _mapper.Map<IEnumerable<AccountViewModel>>(userProfiles);
-
-        var pagedViewModel = new PagedResult<AccountViewModel>()
-        {
-            Items = accountsDetailsViewModel,
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = totalCount,
-            Search = search,
-            ActiveFilter = active
-        };
-
-        return pagedViewModel;
-    }
-
-    public async Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id)
-    {
-        var userProfile = await _userProfileRepository.GetByIdAsync(id, q => q
-                                          .Include(u => u.JobTitle)
-                                          .ThenInclude(j => j.Department)
-                                          .ThenInclude(d => d.Company));
-        if (userProfile == null) return null;
-
-        var editAccountCiewModel = _mapper.Map<EditAccountViewModel>(userProfile);
-
-        var user = await GetByIdAsync(id.ToString());
-        if (user == null) return null;
-
-        editAccountCiewModel.Email = user!.Email!;
-        editAccountCiewModel.PhoneNumber = user!.PhoneNumber!;
-
-        return editAccountCiewModel;
-    }
-
     public async Task<AccountDetailsViewModel?> GetDetailsViewModelByIdAsync(Guid id)
     {
         var user = await GetByIdAsync(id.ToString());
@@ -512,11 +452,6 @@ public class AccountService : IAccountService
             await _userProfileRepository.UpdateAsync(userProfile);
         }
         return Result.Ok();
-    }
-
-    public async Task<InfoUserProfileViewModel?> GetInfoViewModelAsync(Guid id)
-    {
-        return  await _userProfileRepository.GetInfoByIdAsync(id);
     }
     #endregion
 }

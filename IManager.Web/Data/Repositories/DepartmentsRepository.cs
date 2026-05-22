@@ -3,6 +3,7 @@ using IManager.Web.Domain.Entities.Companies;
 using IManager.Web.Domain.Interfaces.Repositories;
 using IManager.Web.Presentation.ViewModels.Departments;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace IManager.Web.Data.Repositories;
 
@@ -12,9 +13,6 @@ public class DepartmentsRepository : Repository<Department>, IDepartmentsReposit
 
     public async Task<InfoDepartmentViewModel?> GetInfoByIdAsync(Guid id)
     {
-        var exists = await ExistsAsync(d => d.Id == id);
-        if (!exists) return null;
-
         var result = await _dbSet.Where(d => d.Id == id).Select(d => new InfoDepartmentViewModel
         {
             AverageSalary = d.JobTitles

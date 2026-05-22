@@ -1,4 +1,4 @@
-﻿@model PagedResult<AccountViewModel>
+﻿@model PagedResult<IndexUserViewModel>
 
 <form method="get" class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -31,7 +31,6 @@
         <tr>
             <th>Nome Completo</th>
             <th>CPF</th>
-            <th>Dt. Nasc.</th>
 
             @if (User.IsInRole(Role.Staff))
             {
@@ -56,16 +55,11 @@
             <tr data-id="@item.Id" data-active="@item.IsActive">
                 <td class="truncate">@item.FullName</td>
                 <td>@(MaskHelper.MaskCpf(item.DocumentNumber))</td>
-                <td>@item.BirthDate.ToString("dd/MM/yyyy")</td>
 
                 @if (User.IsInRole(Role.Staff))
                 {
                     <td class="truncate">@item.JobTitle.Department.Company.TradeName</td>
                     <td>@(MaskHelper.MaskCnpj(item.JobTitle.Department.Company.DocumentNumber))</td>
-                }
-                else
-                {
-                    <td>@(MaskHelper.MaskCurrency(item.BaseSalary))</td>
                 }
 
                 <td class="truncate">@item.JobTitle.Department.Name</td>

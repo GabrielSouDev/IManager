@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IManager.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260414165054_Init")]
+    [Migration("20260522162043_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -217,6 +217,9 @@ namespace IManager.Web.Migrations
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal>("NetSalary")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("OtherDeductions")
                         .HasColumnType("decimal(18,2)");
 
@@ -225,6 +228,12 @@ namespace IManager.Web.Migrations
 
                     b.Property<Guid>("PayrollId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("TotalDeductions")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("TotalEarnings")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("UnhealthyPay")
                         .HasColumnType("decimal(18,2)");

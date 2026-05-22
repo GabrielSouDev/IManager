@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using IManager.Web.Presentation.Validators.Shared;
 using IManager.Web.Presentation.ViewModels.Account;
+using IManager.Web.Presentation.ViewModels.Users;
 
 namespace IManager.Web.Presentation.Validators.Account;
 

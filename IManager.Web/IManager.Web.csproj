@@ -2,7 +2,7 @@
 
   <PropertyGroup>
   	<!-- Ignora sempre o aviso NU1903 -->
-  	<NoWarn>$(NoWarn);NU1903</NoWarn>
+  	<NoWarn>$(NoWarn);NU1903;NU1901</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -28,7 +28,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
-    <PackageReference Include="MailKit" Version="4.15.1" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.4" />

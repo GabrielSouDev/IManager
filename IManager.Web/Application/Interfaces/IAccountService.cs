@@ -2,6 +2,7 @@
 using IManager.Web.Presentation.ViewModels.Account;
 using IManager.Web.Presentation.ViewModels.Companies;
 using IManager.Web.Presentation.ViewModels.Departments;
+using IManager.Web.Presentation.ViewModels.Users;
 using IManager.Web.Shared;
 
 namespace IManager.Web.Application.Interfaces;
@@ -26,9 +27,7 @@ public interface IAccountService
     Task<AccountDetailsViewModel?> GetAccountDetailsViewModelByEmailAsync(string email);
     Task<Result> EditDetailsAsync(string email, AccountDetailsViewModel model);
     Task<Result> ChangePasswordAsync(string email, ChangePasswordViewModel model);
-    Task<PagedResult<AccountViewModel>> GetPagedAsync(int page, int pageSize, ActiveFilter active, Guid? companyId = null, string? search = null);
-    Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id);
     Task<Result> EditAccountAsync(Guid id, EditAccountViewModel model);
     Task<Result> SoftDeleteAsync(Guid id);
-    Task<InfoUserProfileViewModel?> GetInfoViewModelAsync(Guid id);
+    Task<EditAccountViewModel?> GetEditAccountViewModelByIdAsync(Guid id);
 }

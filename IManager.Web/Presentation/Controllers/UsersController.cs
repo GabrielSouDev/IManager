@@ -10,26 +10,28 @@ namespace IManager.Web.Presentation.Controllers;
 public class UsersController : Controller
 {
     private readonly IAccountService _accountService;
+    private readonly IUserService _UserService;
     private readonly IDepartmentService _departmentService;
 
-    public UsersController(IAccountService accountService, IDepartmentService departmentService)
+    public UsersController(IAccountService accountService, IUserService userService, IDepartmentService departmentService)
     {
         _accountService = accountService;
+        _UserService = userService;
         _departmentService = departmentService;
     }
 
     // GET: Users
     public async Task<IActionResult> Index([FromQuery] string search, [FromQuery] ActiveFilter active = ActiveFilter.Active, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        PagedResult<AccountViewModel> model;
+        PagedResult<IndexUserViewModel> model;
         if (User.IsInRole(Role.Staff))
         {
-            model = await _accountService.GetPagedAsync(page, pageSize, active, search: search);
+            model = await _UserService.GetPagedAsync(page, pageSize, active, search: search);
         }
         else
         {
             var companyId = Guid.Parse(User.FindFirst("CompanyId")!.Value);
-            model = await _accountService.GetPagedAsync(page, pageSize, active, companyId, search);
+            model = await _UserService.GetPagedAsync(page, pageSize, active, companyId, search);
         }
 
         return View(model);
@@ -40,13 +42,8 @@ public class UsersController : Controller
     {
         if (id == null) return NotFound();
 
-        var userProfile = await _accountService.GetDetailsViewModelByIdAsync(id.Value);
+        var userProfile = await _UserService.GetDetailsViewModelByIdAsync(id.Value);
         if (userProfile == null) return NotFound();
-
-        var infoViewModel = await _accountService.GetInfoViewModelAsync(id.Value);
-        if (infoViewModel == null) return BadRequest();
-        
-        ViewBag.UserInfo = infoViewModel;
 
         return View(userProfile);
     }
