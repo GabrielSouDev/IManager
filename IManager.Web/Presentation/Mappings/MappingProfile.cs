@@ -63,6 +63,7 @@ public class MappingProfile : Profile
     private void MapCompany()
     {
         CreateMap<Company, CompanyViewModel>().ReverseMap().MaxDepth(5);
+        CreateMap<Company, IndexCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, DetailsCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, CreateCompanyViewModel>().ReverseMap().MaxDepth(5);
         CreateMap<Company, EditCompanyViewModel>().ReverseMap().MaxDepth(5);

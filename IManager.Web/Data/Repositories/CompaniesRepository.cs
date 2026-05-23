@@ -40,11 +40,39 @@ public class CompaniesRepository : Repository<Company>, ICompaniesRepository
 
                 AverageSalary = c.Employees
                     .Where(e => e.Payslips.Any(p => p.CreatedAt >= start && p.CreatedAt < end))
-                    .Average(e => e.Payslips
+                    .Select(e => (decimal?)e.Payslips
                         .Where(p => p.CreatedAt >= start && p.CreatedAt < end)
-                        .Average(p => p.NetSalary))
+                        .Average(p => (decimal?)p.NetSalary))
+                    .Average() ?? 0
             })
             .FirstOrDefaultAsync();
+
+        return result;
+    }
+
+    public async Task<List<IndexCompanyViewModel>> GetPagedAsync(Func<IQueryable<Company>, IQueryable<Company>>? query, int page, int pageSize)
+    {
+        IQueryable<Company> dbset = _dbSet;
+
+        if (query != null)
+            dbset = query(dbset);
+
+        dbset = dbset
+            .OrderBy(e => EF.Property<object>(e, "Id"))
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize);
+
+        var result = await dbset.Select(c => new IndexCompanyViewModel() 
+        { 
+            Id = c.Id,
+            CreatedAt = c.CreatedAt,
+            DocumentNumber = c.DocumentNumber,
+            IsActive = c.IsActive,
+            LegalName = c.LegalName,
+            TradeName = c.TradeName,
+            EmployeeCount = c.Employees.Count(),
+            DepartmentCount = c.Departments.Count()
+        }).ToListAsync();
 
         return result;
     }

@@ -85,7 +85,7 @@ public class CompanyService : ICompanyService
         return model;
     }
 
-    public async Task<PagedResult<CompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize)
+    public async Task<PagedResult<IndexCompanyViewModel>> GetPagedAsync(string search, ActiveFilter active, int page, int pageSize)
     {
         Func<IQueryable<Company>, IQueryable<Company>> query = q =>
         {
@@ -114,14 +114,13 @@ public class CompanyService : ICompanyService
             return q;
         };
 
+        IEnumerable<IndexCompanyViewModel> companies = await _companyRepository.GetPagedAsync(query, page, pageSize);
+
         var totalCount = await _companyRepository.CountAsync(query);
 
-        IEnumerable<Company> userProfiles = await _companyRepository.GetAllAsync(query, page, pageSize);
-        var CompanyDetailsViewModel = _mapper.Map<IEnumerable<CompanyViewModel>>(userProfiles);
-
-        var pagedViewModel = new PagedResult<CompanyViewModel>()
+        var pagedViewModel = new PagedResult<IndexCompanyViewModel>()
         {
-            Items = CompanyDetailsViewModel,
+            Items = companies,
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,

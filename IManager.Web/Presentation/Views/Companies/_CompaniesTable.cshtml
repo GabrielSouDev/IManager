@@ -1,4 +1,4 @@
-﻿@model PagedResult<CompanyViewModel>
+﻿@model PagedResult<IndexCompanyViewModel>
 
 <form method="get" class="d-flex justify-content-between align-items-center mb-3">
     <div>
@@ -32,8 +32,9 @@
             <th>CNPJ</th>
             <th>Razão Social</th>
             <th>Nome Fantasia</th>
-            <th>Data de Fundação</th>
-            <th>Data de Criação</th>
+            <th>Qnt. Funcionarios</th>
+            <th>Qnt. Setores</th>
+            <th>Dt. Criação</th>
             <th class="text-center">Ativo</th>
         </tr>
     </thead>
@@ -45,7 +46,8 @@
                 <td>@MaskHelper.MaskCnpj(item.DocumentNumber)</td>
                 <td class="truncate">@item.LegalName</td>
                 <td class="truncate">@item.TradeName</td>
-                <td>@item.FoundedAt.ToString("dd/MM/yyyy")</td>
+                <td class="text-center">@item.EmployeeCount</td>
+                <td class="text-center">@item.DepartmentCount</td>
                 <td>@item.CreatedAt.ToString("dd/MM/yyyy")</td>
                 <td class="text-center">@(item.IsActive ? "✅" : "❌")</td>
             </tr>
